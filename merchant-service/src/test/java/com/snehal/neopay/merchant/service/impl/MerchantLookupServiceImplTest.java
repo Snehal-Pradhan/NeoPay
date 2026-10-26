@@ -117,4 +117,31 @@ class MerchantLookupServiceImplTest {
         assertTrue(error.getMessage().contains(merchantId.toString()));
         verify(merchantRepository).findById(merchantId);
     }
+
+    @Test
+    void configWithoutSecretIsSkippedInsteadOfFailing() {
+        UUID merchantId = UUID.randomUUID();
+        when(webhookConfigRepository.findByMerchant_IdAndEnabledTrue(merchantId))
+                .thenReturn(java.util.List.of(MerchantWebhookConfig.builder()
+                        .id(UUID.randomUUID())
+                        .targetUrl("https://a.example/hook")
+                        .eventTypes("ALL")
+                        .build()));
+
+        assertTrue(service.getActiveConfigsForEvent(merchantId, "payment.captured").isEmpty());
+    }
+
+    @Test
+    void configWithBlankSecretIsSkipped() {
+        UUID merchantId = UUID.randomUUID();
+        when(webhookConfigRepository.findByMerchant_IdAndEnabledTrue(merchantId))
+                .thenReturn(java.util.List.of(MerchantWebhookConfig.builder()
+                        .id(UUID.randomUUID())
+                        .targetUrl("https://a.example/hook")
+                        .webhookSecret("   ")
+                        .eventTypes("ALL")
+                        .build()));
+
+        assertTrue(service.getActiveConfigsForEvent(merchantId, "payment.captured").isEmpty());
+    }
 }

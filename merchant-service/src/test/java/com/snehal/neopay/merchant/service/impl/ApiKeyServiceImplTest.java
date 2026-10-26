@@ -149,7 +149,10 @@ class ApiKeyServiceImplTest {
                 .build();
         when(apiKeyRepository.findById(key.getId())).thenReturn(Optional.of(key));
 
-        assertThrows(RuntimeException.class, () -> service.rotate(MERCHANT_ID, key.getId()));
+        com.snehal.neopay.common.exception.BusinessRuleViolationException error =
+                assertThrows(com.snehal.neopay.common.exception.BusinessRuleViolationException.class,
+                        () -> service.rotate(MERCHANT_ID, key.getId()));
+        assertEquals("API_KEY_DISABLED", error.getErrorCode());
         verify(apiKeyRepository, never()).save(any());
     }
 

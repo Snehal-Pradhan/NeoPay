@@ -2,6 +2,7 @@ package com.snehal.neopay.merchant.service.impl;
 
 import com.snehal.neopay.common.cache.ApiKeyCache;
 import com.snehal.neopay.common.cache.ApiKeyCacheEntry;
+import com.snehal.neopay.common.exception.BusinessRuleViolationException;
 import com.snehal.neopay.common.exception.ResourceNotFoundException;
 import com.snehal.neopay.common.util.RandomizerUtil;
 import com.snehal.neopay.merchant.dto.request.CreateApiKeyRequest;
@@ -81,7 +82,10 @@ public class ApiKeyServiceImpl implements ApiKeyService {
                 .filter(k -> k.getMerchant().getId().equals(merchantId))
                 .orElseThrow(() -> new ResourceNotFoundException("ApiKey", keyId));
 
-        if(!apiKey.isEnabled()) throw new RuntimeException("Cannot rotate a disabled key");
+        if (!apiKey.isEnabled()) {
+            throw new BusinessRuleViolationException("API_KEY_DISABLED",
+                    "Cannot rotate a disabled key");
+        }
 
         String newRawSecret = RandomizerUtil.randomBase64(40);
         apiKey.setPreviousKeySecretHash(apiKey.getKeySecretHash());

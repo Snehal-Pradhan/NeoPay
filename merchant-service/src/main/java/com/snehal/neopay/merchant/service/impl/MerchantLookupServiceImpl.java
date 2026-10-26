@@ -31,6 +31,13 @@ public class MerchantLookupServiceImpl implements MerchantLookupService {
     public List<WebhookTarget> getActiveConfigsForEvent(UUID merchantId, String eventType) {
         return merchantWebhookConfigRepository.findByMerchant_IdAndEnabledTrue(merchantId).stream()
                 .filter(config -> config.isSubscribedTo(eventType))
+                .filter(config -> {
+                    if (config.getWebhookSecret() == null || config.getWebhookSecret().isBlank()) {
+                        log.warn("Skipping webhook config without a secret, configId={}", config.getId());
+                        return false;
+                    }
+                    return true;
+                })
                 .map(config -> {
                     byte[] cipherBytes = Base64.getDecoder().decode(config.getWebhookSecret());
                     byte[] decryptedSecretBytes = bytesEncryptor.decrypt(cipherBytes);
