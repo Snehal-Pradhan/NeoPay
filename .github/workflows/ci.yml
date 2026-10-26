@@ -136,6 +136,94 @@ jobs:
           test -s ${{ matrix.module }}/target/jib-image.tar
           ls -lh ${{ matrix.module }}/target/jib-image.tar
 
+  k8s-smoke:
+    name: kind smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Install common-lib
+        run: mvn -B -q -f common-lib/pom.xml -DskipTests install
+
+      - name: Build config-service image tarball
+        run: |
+          mvn -B -q -f config-service/pom.xml -DskipTests compile \
+            jib:buildTar -Djib.skip=false \
+            -Djib.to.image=neopay/neopay-config-service:latest
+          test -s config-service/target/jib-image.tar
+          ls -lh config-service/target/jib-image.tar
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: neopay-smoke
+
+      - name: Load image into kind
+        run: kind load image-archive config-service/target/jib-image.tar --name neopay-smoke
+
+      - name: Apply namespace, config, and secret
+        run: |
+          kubectl apply -f k8s/infra/namespace.yaml
+          kubectl apply -f k8s/infra/configmap.yaml
+          kubectl -n neopay-core create secret generic app-secrets \
+            --from-env-file=k8s/k8s-secrets.env.example
+
+      - name: Deploy config-service
+        run: |
+          kubectl apply -f k8s/services/config-service.yaml
+          kubectl -n neopay-core patch deployment config-service --type=json \
+            -p='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"IfNotPresent"}]'
+          kubectl -n neopay-core rollout status deployment/config-service --timeout=240s
+
+      - name: Query the deployed service
+        run: |
+          kubectl -n neopay-core port-forward svc/config-service 8888:8888 &
+          PF=$!
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8888/actuator/health; then
+              echo "config-service healthy in the cluster"
+              kill "$PF" || true
+              exit 0
+            fi
+            sleep 2
+          done
+          kill "$PF" || true
+          kubectl -n neopay-core describe pods
+          exit 1
+
+      - name: Enforce network policies
+        run: |
+          kubectl apply -f k8s/infra/network-policies.yaml
+          kubectl -n neopay-core get networkpolicy -o wide
+
+      - name: Capture deployment evidence
+        if: always()
+        run: |
+          kubectl -n neopay-core get pods -o wide > kind-pods.txt || true
+          kubectl -n neopay-core get events --sort-by=.lastTimestamp > kind-events.txt || true
+          kubectl -n neopay-core describe pods >> kind-pods.txt || true
+          cat kind-pods.txt
+
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kind-smoke-evidence
+          path: |
+            kind-pods.txt
+            kind-events.txt
+          retention-days: 7
+          if-no-files-found: ignore
+
   e2e:
     name: end-to-end
     runs-on: ubuntu-latest
@@ -193,7 +281,7 @@ jobs:
   gate-summary:
     name: gate summary
     runs-on: ubuntu-latest
-    needs: [secrets, verify, manifests, images, e2e]
+    needs: [secrets, verify, manifests, images, k8s-smoke, e2e]
     if: always()
     steps:
       - name: Report matrix result
@@ -202,9 +290,11 @@ jobs:
           echo "verify matrix: ${{ needs.verify.result }}"
           echo "manifests: ${{ needs.manifests.result }}"
           echo "image builds: ${{ needs.images.result }}"
+          echo "kind smoke: ${{ needs.k8s-smoke.result }}"
           echo "end-to-end: ${{ needs.e2e.result }}"
           test "${{ needs.secrets.result }}" = "success"
           test "${{ needs.verify.result }}" = "success"
           test "${{ needs.manifests.result }}" = "success"
           test "${{ needs.images.result }}" = "success"
+          test "${{ needs.k8s-smoke.result }}" = "success"
           test "${{ needs.e2e.result }}" = "success"

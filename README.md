@@ -216,6 +216,17 @@ separate merchant API keys.
 Reproduce with `./perf/run-k6.sh` (provisions its own merchants and keys). Raw artifact:
 `perf/k6-summary.json`. Method, limits and the service-level baseline: `docs/PERFORMANCE.md`.
 
+## Deployment
+
+`k8s/` contains the manifests (namespace, config map, default-deny network policies,
+Postgres/Redis/Kafka/Zipkin/Prometheus/Grafana, and one Deployment per service) plus a
+`kind` cluster definition. CI validates the rendered manifests with `kubeconform` and
+Trivy, then a `kind smoke` job builds a real Jib image, loads it into a single-node
+cluster, deploys `config-service`, waits for the rollout, queries
+`/actuator/health`, applies the network policies and uploads pod evidence as an
+artifact. This is a deployment proof, not a production topology: no cloud resources,
+ingress controller, TLS, or managed databases.
+
 ## Verified flows
 
 Executed both locally and on every push by the `end-to-end` CI job, through the gateway:
