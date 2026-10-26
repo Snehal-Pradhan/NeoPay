@@ -8,3 +8,5 @@ target/
 .agents/
 *.class
 .opencode/
+*.env
+!*.env.example
