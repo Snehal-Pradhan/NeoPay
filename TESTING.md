@@ -99,6 +99,32 @@ ignores `includes` on `BUNDLE` rules.
 mvn -f merchant-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
 ```
 
+`vault-service` (ratcheted 2026-10-26, never lowered):
+
+| Scope | Line | Branch | Mutation |
+|---|---:|---:|---:|
+| bundle | 99% | 99% | 99% (`mutation-baseline`) |
+| application (`service`, `impl`) | 99% | 99% | — |
+| api (`controller`) | 99% | — | — |
+| infrastructure (`processor`, `validation`, `logging`) | 99% | 99% | — |
+
+`payment-service` (ratcheted 2026-10-26, never lowered):
+
+| Scope | Line | Branch | Mutation |
+|---|---:|---:|---:|
+| bundle | 84% | 69% | 75% (`mutation-baseline`) |
+| domain (`statemachine`, `ledger`, `domain`) | 90% | 79% | — |
+| application (`service`, `impl`, `saga`, `dispute`, `fx`, `risk`) | 87% | 70% | — |
+| api (`controller`, `api`) | 99% | — | — |
+| infrastructure (`outbox`, `client`, `gateway`, `adapter`, `processor`, `repository`, `metrics`, `report`, `simulator`, `eventsourcing`, `strategy`, `simulation`) | 77% | 62% | — |
+
+Mutation commands:
+
+```bash
+mvn -f vault-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
+mvn -f payment-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
+```
+
 Tier targets: domain 90+, application 80+, API 70-80+, infrastructure 60+, with
 branch coverage tracked separately. A floor is raised when a service improves; it
 is never lowered to make a build pass.

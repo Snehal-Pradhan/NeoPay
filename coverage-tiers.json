@@ -89,5 +89,98 @@
         "branch": 0.0
       }
     }
+  },
+  "vault-service": {
+    "bundle": {
+      "line": 0.99,
+      "branch": 0.99
+    },
+    "mutation": {
+      "mutation_baseline": 99
+    },
+    "layers": {
+      "application": {
+        "packages": [
+          "service",
+          "impl"
+        ],
+        "line": 0.99,
+        "branch": 0.99
+      },
+      "api": {
+        "packages": [
+          "controller"
+        ],
+        "line": 0.99,
+        "branch": 0.0
+      },
+      "infrastructure": {
+        "packages": [
+          "processor",
+          "validation",
+          "logging"
+        ],
+        "line": 0.99,
+        "branch": 0.99
+      }
+    }
+  },
+  "payment-service": {
+    "bundle": {
+      "line": 0.83,
+      "branch": 0.69
+    },
+    "mutation": {
+      "mutation_baseline": 75
+    },
+    "layers": {
+      "domain": {
+        "packages": [
+          "statemachine",
+          "ledger",
+          "domain"
+        ],
+        "line": 0.9,
+        "branch": 0.79
+      },
+      "application": {
+        "packages": [
+          "service",
+          "impl",
+          "saga",
+          "dispute",
+          "fx",
+          "risk"
+        ],
+        "line": 0.87,
+        "branch": 0.702
+      },
+      "api": {
+        "packages": [
+          "controller",
+          "api"
+        ],
+        "line": 0.995,
+        "branch": 0.0
+      },
+      "infrastructure": {
+        "packages": [
+          "outbox",
+          "client",
+          "gateway",
+          "adapter",
+          "processor",
+          "repository",
+          "metrics",
+          "report",
+          "simulator",
+          "eventsourcing",
+          "strategy",
+          "simulation"
+        ],
+        "line": 0.771,
+        "branch": 0.62
+      }
+    }
   }
 }
