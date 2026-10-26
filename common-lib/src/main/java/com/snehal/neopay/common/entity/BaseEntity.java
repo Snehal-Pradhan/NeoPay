@@ -2,6 +2,7 @@ package com.snehal.neopay.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Version;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,5 +33,9 @@ public class BaseEntity {
 
     @LastModifiedBy
     private String updatedBy;
+
+    /** Optimistic-lock token. Null on a new entity, incremented by Hibernate per update. */
+    @Version
+    private Long version;
 
 }

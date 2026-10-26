@@ -1,5 +1,9 @@
 # NeoPay — Microservices Payments Platform
 
+> **Database note:** every entity now inherits an optimistic-lock `version` column from
+> `BaseEntity`. An existing database needs `version bigint` added and backfilled with `0`
+> before deploy. Schema management moves to Flyway in the platform phase.
+>
 > **Rollout status:** published incrementally, one project at a time. Currently in the
 > repository: `common-lib` and `merchant-service`. The remaining services are being
 > hardened and published in the same way.

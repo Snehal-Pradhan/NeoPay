@@ -117,6 +117,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            org.springframework.dao.OptimisticLockingFailureException.class,
+            jakarta.persistence.OptimisticLockException.class
+    })
+    public ResponseEntity<ProblemDetail> handleConcurrentModification(Exception ex,
+                                                                     HttpServletRequest request) {
+        log.warn("Concurrent modification on {} {}: {}",
+                request.getMethod(), request.getRequestURI(), ex.getMessage());
+        return respond(HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION",
+                "The resource was modified by another request; retry", request);
+    }
+
+    @ExceptionHandler({
             org.springframework.web.ErrorResponseException.class,
             org.springframework.web.server.ResponseStatusException.class,
             org.springframework.web.servlet.resource.NoResourceFoundException.class,

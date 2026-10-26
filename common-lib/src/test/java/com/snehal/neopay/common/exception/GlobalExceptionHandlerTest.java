@@ -197,4 +197,24 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNull(response.getBody().getInstance());
     }
+
+    @Test
+    void optimisticLockFailureMapsToConflict() {
+        ResponseEntity<ProblemDetail> response = handler.handleConcurrentModification(
+                new org.springframework.dao.OptimisticLockingFailureException("stale version"), request);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("CONCURRENT_MODIFICATION",
+                response.getBody().getProperties().get("errorCode"));
+    }
+
+    @Test
+    void jpaOptimisticLockMapsToConflict() {
+        ResponseEntity<ProblemDetail> response = handler.handleConcurrentModification(
+                new jakarta.persistence.OptimisticLockException("stale"), request);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("CONCURRENT_MODIFICATION",
+                response.getBody().getProperties().get("errorCode"));
+    }
 }
