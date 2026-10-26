@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify / ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - common-lib
+          - merchant-service
+          - payment-service
+          - vault-service
+          - operations-service
+          - api-gateway-service
+          - discovery-service
+          - config-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Install common-lib
+        if: matrix.module != 'common-lib'
+        run: mvn -B -q -f common-lib/pom.xml -DskipTests install
+
+      - name: Verify ${{ matrix.module }}
+        run: mvn -B -f ${{ matrix.module }}/pom.xml verify
+
+      - name: Layered coverage gate
+        if: contains(fromJSON('["common-lib","merchant-service","payment-service","vault-service","operations-service","api-gateway-service"]'), matrix.module)
+        run: python3 scripts/coverage-gate.py ${{ matrix.module }}
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ matrix.module }}
+          path: |
+            ${{ matrix.module }}/target/surefire-reports/
+            ${{ matrix.module }}/target/site/jacoco/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  gate-summary:
+    name: gate summary
+    runs-on: ubuntu-latest
+    needs: verify
+    if: always()
+    steps:
+      - name: Report matrix result
+        run: |
+          echo "verify matrix: ${{ needs.verify.result }}"
+          test "${{ needs.verify.result }}" = "success"
