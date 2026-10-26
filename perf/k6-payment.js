@@ -1,42 +1,64 @@
 import http from 'k6/http';
 import encoding from 'k6/encoding';
 import { check } from 'k6';
-import { randomString } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
-// Usage:
-//   k6 run -e BASE_URL=http://localhost:8080 -e KEY_ID=... -e KEY_SECRET=... perf/k6-payment.js
+// End-to-end payment benchmark.
 //
-// Thresholds fail the run when the payment path regresses.
+// Usage:
+//   k6 run -e BASE_URL=http://localhost:8080 \
+//          -e AUTH_POOL=<base64(keyId:keySecret)>,<...> \
+//          perf/k6-payment.js
+//
+// AUTH_POOL is a comma-separated list of pre-encoded Basic credentials. A single
+// KEY_ID/KEY_SECRET pair still works as a fallback for a quick smoke run.
+// The default scenario is a constant arrival rate of 15 order+payment flows per
+// second (30 HTTP requests per second). Independent keys are used so the gateway
+// per-key limit of 200 requests/minute is never approached.
 
 export const options = {
   scenarios: {
-    payment_initiate: {
-      executor: 'ramping-vus',
-      startVUs: 10,
-      stages: [
-        { duration: '30s', target: 50 },
-        { duration: '60s', target: 100 },
-        { duration: '30s', target: 100 },
-        { duration: '10s', target: 0 },
-      ],
+    payment_flow: {
+      executor: 'constant-arrival-rate',
+      rate: Number(__ENV.RATE || 15),
+      timeUnit: '1s',
+      duration: __ENV.DURATION || '60s',
+      preAllocatedVUs: 25,
+      maxVUs: 60,
     },
   },
   thresholds: {
     http_req_failed: ['rate<0.01'],
-    http_req_duration: ['p(95)<500', 'p(99)<800'],
-    'http_req_duration{name:create_order}': ['p(95)<300'],
-    'http_req_duration{name:init_payment}': ['p(99)<800'],
+    http_req_duration: ['p(95)<300', 'p(99)<600'],
+    'http_req_duration{name:create_order}': ['p(95)<250'],
+    'http_req_duration{name:init_payment}': ['p(95)<350', 'p(99)<600'],
   },
 };
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
-const KEY_ID = __ENV.KEY_ID;
-const KEY_SECRET = __ENV.KEY_SECRET;
+const AUTH_POOL = (__ENV.AUTH_POOL || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter((value) => value.length > 0);
 
-const auth = 'Basic ' + encoding.b64encode(`${KEY_ID}:${KEY_SECRET}`);
+const FALLBACK_AUTH =
+  __ENV.KEY_ID && __ENV.KEY_SECRET
+    ? 'Basic ' + encoding.b64encode(`${__ENV.KEY_ID}:${__ENV.KEY_SECRET}`)
+    : null;
+
+function pickAuth() {
+  if (AUTH_POOL.length > 0) {
+    return 'Basic ' + AUTH_POOL[Math.floor(Math.random() * AUTH_POOL.length)];
+  }
+  return FALLBACK_AUTH;
+}
 
 export default function () {
-  const receipt = `k6-${Date.now()}-${randomString(8)}`;
+  const auth = pickAuth();
+  if (!auth) {
+    throw new Error('AUTH_POOL or KEY_ID/KEY_SECRET must be provided');
+  }
+
+  const receipt = `k6-${__VU}-${__ITER}-${Date.now()}`;
 
   const order = http.post(
     `${BASE_URL}/v1/orders`,
@@ -51,7 +73,7 @@ export default function () {
   );
 
   const orderOk = check(order, {
-    'order created': (r) => r.status === 201 || r.status === 200,
+    'order created (2xx)': (r) => r.status === 200 || r.status === 201,
   });
   if (!orderOk) return;
 
@@ -75,7 +97,7 @@ export default function () {
   );
 
   check(payment, {
-    'payment accepted': (r) => r.status === 200 || r.status === 201,
-    'payment has status': (r) => r.json('status') !== undefined,
+    'payment accepted (2xx)': (r) => r.status === 200 || r.status === 201,
+    'payment status present': (r) => r.json('status') !== undefined,
   });
 }

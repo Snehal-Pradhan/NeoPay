@@ -1,0 +1,54 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Gateway [icon: server, color: blue]
+
+OrderController [icon: receipt, color: gray]
+PaymentController [icon: credit-card, color: gray]
+RefundController [icon: refresh-cw, color: gray]
+InternalSettlementController [icon: file-text, color: gray]
+
+PaymentService [icon: workflow, color: gray]
+RefundService [icon: refresh-cw, color: gray]
+DisputeService [icon: shield, color: gray]
+LedgerService [icon: book-open, color: gray]
+FxRateLockService [icon: globe, color: gray]
+RiskEnforcer [icon: shield, color: gray]
+Outbox [icon: send, color: gray]
+
+Postgres [icon: database, color: green]
+Redis [icon: database, color: green]
+Kafka [icon: layers, color: green]
+Merchant Service [icon: server, color: gray]
+Vault Service [icon: server, color: gray]
+
+Gateway > OrderController
+Gateway > PaymentController
+Gateway > RefundController
+Gateway > InternalSettlementController
+
+OrderController > PaymentService
+PaymentController > PaymentService
+RefundController > RefundService
+InternalSettlementController > PaymentService
+
+PaymentService > RiskEnforcer
+PaymentService > FxRateLockService
+PaymentService > LedgerService
+PaymentService > Outbox
+RefundService > LedgerService
+DisputeService > LedgerService
+
+PaymentService > Merchant Service
+PaymentService > Vault Service
+
+PaymentService > Postgres
+RefundService > Postgres
+DisputeService > Postgres
+LedgerService > Postgres
+Outbox > Postgres
+PaymentService > Redis
+LedgerService > Redis
+Outbox > Kafka

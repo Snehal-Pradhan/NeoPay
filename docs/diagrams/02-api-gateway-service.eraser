@@ -1,0 +1,37 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Client [icon: user, color: blue]
+
+GatewayAuthFilter [icon: shield, color: gray]
+PublicRouteMatcher [icon: route, color: gray]
+ApiKeyAuthHandler [icon: key, color: gray]
+JwtAuthHandler [icon: lock, color: gray]
+HeaderWrapper [icon: layers, color: gray]
+
+Merchant Service [icon: server, color: gray]
+Payment Service [icon: server, color: gray]
+Vault Service [icon: server, color: gray]
+Operations Service [icon: server, color: gray]
+Discovery Service [icon: network, color: gray]
+Redis [icon: database, color: green]
+
+Client > GatewayAuthFilter
+GatewayAuthFilter > PublicRouteMatcher
+GatewayAuthFilter > ApiKeyAuthHandler
+GatewayAuthFilter > JwtAuthHandler
+ApiKeyAuthHandler > Merchant Service
+ApiKeyAuthHandler > Redis
+JwtAuthHandler > HeaderWrapper
+HeaderWrapper > Merchant Service
+HeaderWrapper > Payment Service
+HeaderWrapper > Vault Service
+HeaderWrapper > Operations Service
+
+Merchant Service -- Discovery Service
+Payment Service -- Discovery Service
+Vault Service -- Discovery Service
+Operations Service -- Discovery Service
+GatewayAuthFilter -- Discovery Service

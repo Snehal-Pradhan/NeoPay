@@ -1,0 +1,36 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Kafka [icon: layers, color: green]
+Payment Service [icon: server, color: gray]
+Merchant Service [icon: server, color: gray]
+Merchant Webhook Target [icon: webhook, color: blue]
+
+SettlementEngine [icon: banknote, color: gray]
+SettlementExecutor [icon: landmark, color: gray]
+PayoutService [icon: wallet, color: gray]
+ReconService [icon: list, color: gray]
+WebhookConsumer [icon: webhook, color: gray]
+WebhookRetryQueue [icon: timer, color: gray]
+CarryForwardService [icon: repeat, color: gray]
+
+Postgres [icon: database, color: green]
+
+Kafka > WebhookConsumer
+Kafka > SettlementEngine
+Payment Service > SettlementEngine
+Merchant Service > WebhookConsumer
+
+SettlementEngine > SettlementExecutor
+SettlementExecutor > PayoutService
+SettlementEngine > CarryForwardService
+ReconService > Postgres
+SettlementExecutor > Postgres
+PayoutService > Postgres
+CarryForwardService > Postgres
+WebhookConsumer > WebhookRetryQueue
+WebhookConsumer > Postgres
+WebhookRetryQueue > Merchant Webhook Target
+SettlementExecutor > Payment Service

@@ -24,6 +24,44 @@ Scope: order insert, payment insert, state transition, transition log, outbox wr
 the mocked gateway call. Excludes HTTP serialization, the gateway process, the vault
 service, and real processor latency.
 
+## End-to-end HTTP load test (k6)
+
+Measured on the full local stack: `api-gateway-service` -> `payment-service` ->
+`merchant-service` -> PostgreSQL 16 + Redis 7, with writes to the outbox and Kafka.
+Docker Desktop on macOS, single host, JVM default heap, no tuning beyond the settings
+listed below.
+
+Load model: `constant-arrival-rate`, 15 complete order+payment flows per second
+(30 HTTP requests per second) for 60 seconds, after provisioning 20 separate ACTIVE
+`TIER_3` merchants so no single API key approaches the gateway limit of 200
+requests/minute.
+
+| Metric | Measured | Threshold |
+|---|---:|---:|
+| Flows (order + payment) | 900 | — |
+| Total HTTP requests | 1,800 | — |
+| Throughput | 30.0 req/s | — |
+| Error rate (`http_req_failed`) | 0.00% (0/1,800) | < 1.00% |
+| Checks passed | 100% (2,700/2,700) | 100% |
+| Overall latency p50 | 13.9 ms | — |
+| Overall latency p95 | 42.8 ms | < 300 ms |
+| Overall latency max | 490.3 ms | — |
+| `POST /v1/orders` p50 | 10.9 ms | — |
+| `POST /v1/orders` p95 | 80.9 ms | < 250 ms |
+| `POST /v1/payments` p50 | 17.9 ms | — |
+| `POST /v1/payments` p95 | 41.2 ms | < 350 ms |
+| `POST /v1/payments` max | 107.2 ms | — |
+
+Raw artifact: `perf/k6-summary.json`. Console output: `perf/k6-output.txt`.
+
+Limits of this measurement:
+
+- One machine: the k6 container, seven JVMs, Postgres, Redis and Kafka share CPU.
+- The payment method is UPI with the deterministic simulator; no external PSP hop.
+- The callback simulator captures asynchronously, so capture latency is not in the
+  request path measured here.
+- 60 seconds, not a soak; no memory-pressure or GC-pause trend is captured.
+
 ## How to reproduce
 
 ```bash
@@ -35,13 +73,21 @@ The test fails when p99 exceeds 300 ms, so it is also the regression gate.
 Full HTTP path with k6:
 
 ```bash
+docker compose up -d
+./scripts/run-local.sh
+./perf/run-k6.sh          # provisions 20 merchants, runs 15 flows/sec for 60s
+./scripts/stop-local.sh
+```
+
+`perf/run-k6.sh` writes `perf/k6-summary.json` and `perf/k6-output.txt`. Thresholds in
+`perf/k6-payment.js` fail the run on regression. A single-key smoke run is still possible:
+
+```bash
 k6 run -e BASE_URL=http://localhost:8080 \
        -e KEY_ID=np_test_xxx \
        -e KEY_SECRET=xxx \
        perf/k6-payment.js
 ```
-
-Thresholds in `perf/k6-payment.js` fail the run on regression.
 
 ## Changes made for this measurement
 

@@ -1,0 +1,26 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Config Repository [icon: file-text, color: green]
+Config Server [icon: settings, color: gray]
+
+Gateway [icon: server, color: blue]
+Merchant Service [icon: server, color: blue]
+Payment Service [icon: server, color: blue]
+Vault Service [icon: server, color: blue]
+Operations Service [icon: server, color: blue]
+
+Config Repository > Config Server
+Config Server > Gateway
+Config Server > Merchant Service
+Config Server > Payment Service
+Config Server > Vault Service
+Config Server > Operations Service
+
+Config Server -- Gateway
+Config Server -- Merchant Service
+Config Server -- Payment Service
+Config Server -- Vault Service
+Config Server -- Operations Service

@@ -1,0 +1,27 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Gateway [icon: server, color: blue]
+Payment Service [icon: server, color: blue]
+
+VaultController [icon: lock, color: gray]
+InternalVaultController [icon: lock, color: gray]
+VaultService [icon: shield, color: gray]
+EnvelopeEncryption [icon: key, color: gray]
+CardPaymentProcessor [icon: credit-card, color: gray]
+
+Postgres [icon: database, color: green]
+MasterKey [icon: key, color: green]
+
+Gateway > VaultController
+Payment Service > InternalVaultController
+VaultController > VaultService
+InternalVaultController > VaultService
+
+VaultService > EnvelopeEncryption
+VaultService > CardPaymentProcessor
+VaultService > Postgres
+EnvelopeEncryption > MasterKey
+CardPaymentProcessor -- Postgres

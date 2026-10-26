@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="100%" height="auto" font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">NeoPay platform architecture</title>
+  <desc id="arch-desc">Clients reach the API gateway, which routes to merchant, payment, vault, and operations services. Services use PostgreSQL, Redis, and Kafka; discovery and config services form the control plane.</desc>
+  <defs>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow-black" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1f2937"/>
+    </marker>
+    <marker id="arrow-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <rect width="1080" height="540" rx="12" fill="#ffffff"/>
+
+  <text x="95" y="34" font-size="12" font-weight="700" fill="#4b5563" text-anchor="middle" letter-spacing="1">CLIENTS</text>
+  <text x="292" y="34" font-size="12" font-weight="700" fill="#4b5563" text-anchor="middle" letter-spacing="1">EDGE</text>
+  <text x="560" y="34" font-size="12" font-weight="700" fill="#4b5563" text-anchor="middle" letter-spacing="1">CORE SERVICES (SPRING BOOT 4)</text>
+  <text x="925" y="34" font-size="12" font-weight="700" fill="#4b5563" text-anchor="middle" letter-spacing="1">DATA &amp; OBSERVABILITY</text>
+
+  <!-- Actors (blue) -->
+  <g filter="url(#shadow)">
+    <rect x="25" y="80" width="140" height="56" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="95" y="105" font-size="13" font-weight="600" fill="#1e3a8a" text-anchor="middle">Merchant Server</text>
+    <text x="95" y="123" font-size="11" fill="#1e40af" text-anchor="middle">Basic API key</text>
+
+    <rect x="25" y="190" width="140" height="56" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="95" y="215" font-size="13" font-weight="600" fill="#1e3a8a" text-anchor="middle">Checkout Client</text>
+    <text x="95" y="233" font-size="11" fill="#1e40af" text-anchor="middle">Card / UPI / NBK</text>
+
+    <rect x="25" y="300" width="140" height="56" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="95" y="325" font-size="13" font-weight="600" fill="#1e3a8a" text-anchor="middle">Merchant Dashboard</text>
+    <text x="95" y="343" font-size="11" fill="#1e40af" text-anchor="middle">Bearer JWT</text>
+  </g>
+
+  <!-- Gateway (gray) -->
+  <g filter="url(#shadow)">
+    <rect x="220" y="150" width="145" height="136" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="292" y="182" font-size="14" font-weight="700" fill="#111827" text-anchor="middle">API Gateway</text>
+    <text x="292" y="200" font-size="11" fill="#374151" text-anchor="middle">:8080</text>
+    <text x="292" y="224" font-size="11" fill="#4b5563" text-anchor="middle">- Auth filter (JWT/key)</text>
+    <text x="292" y="242" font-size="11" fill="#4b5563" text-anchor="middle">- Header stripping</text>
+    <text x="292" y="260" font-size="11" fill="#4b5563" text-anchor="middle">- Redis rate limit</text>
+  </g>
+
+  <!-- Business services (gray) -->
+  <g filter="url(#shadow)">
+    <rect x="445" y="55" width="230" height="72" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="560" y="80" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">merchant-service (:9010)</text>
+    <text x="560" y="98" font-size="11" fill="#4b5563" text-anchor="middle">Auth, API keys, KYC, risk, webhooks</text>
+    <text x="560" y="114" font-size="10" fill="#6b7280" text-anchor="middle">Flyway - neopay-merchant-db</text>
+
+    <rect x="445" y="148" width="230" height="86" rx="8" fill="#f3f4f6" stroke="#374151" stroke-width="2"/>
+    <text x="560" y="173" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">payment-service (:9020)</text>
+    <text x="560" y="191" font-size="11" fill="#4b5563" text-anchor="middle">Orders, saga, double-entry ledger,</text>
+    <text x="560" y="207" font-size="11" fill="#4b5563" text-anchor="middle">refunds, disputes, FX lock, outbox</text>
+    <text x="560" y="223" font-size="10" fill="#6b7280" text-anchor="middle">Flyway - neopay-payment-db</text>
+
+    <rect x="445" y="255" width="230" height="72" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="560" y="280" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">vault-service (:9040)</text>
+    <text x="560" y="298" font-size="11" fill="#4b5563" text-anchor="middle">PAN tokenization, AES-GCM DEK/KEK</text>
+    <text x="560" y="314" font-size="10" fill="#6b7280" text-anchor="middle">Flyway - neopay-vault-db</text>
+
+    <rect x="445" y="348" width="230" height="78" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="560" y="373" font-size="13" font-weight="700" fill="#111827" text-anchor="middle">operations-service (:9030)</text>
+    <text x="560" y="391" font-size="11" fill="#4b5563" text-anchor="middle">Settlements, payouts, recon, ISO 20022,</text>
+    <text x="560" y="407" font-size="11" fill="#4b5563" text-anchor="middle">webhook fan-out, retry and DLQ</text>
+  </g>
+
+  <!-- Control plane (gray) -->
+  <g filter="url(#shadow)">
+    <rect x="220" y="445" width="205" height="58" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="322" y="470" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">discovery-service (:8761)</text>
+    <text x="322" y="488" font-size="11" fill="#4b5563" text-anchor="middle">Eureka service registry</text>
+
+    <rect x="470" y="445" width="205" height="58" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="572" y="470" font-size="12" font-weight="700" fill="#111827" text-anchor="middle">config-service (:8888)</text>
+    <text x="572" y="488" font-size="11" fill="#4b5563" text-anchor="middle">Central native config server</text>
+  </g>
+
+  <!-- Data and observability (green) -->
+  <g filter="url(#shadow)">
+    <rect x="805" y="55" width="240" height="72" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="925" y="80" font-size="13" font-weight="700" fill="#14532d" text-anchor="middle">PostgreSQL 16 (:5433)</text>
+    <text x="925" y="98" font-size="11" fill="#166534" text-anchor="middle">4 isolated databases + Flyway V1</text>
+    <text x="925" y="114" font-size="10" fill="#15803d" text-anchor="middle">Pessimistic locks, unique ledger index</text>
+
+    <rect x="805" y="150" width="240" height="66" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="925" y="175" font-size="13" font-weight="700" fill="#14532d" text-anchor="middle">Redis 7 (:6380)</text>
+    <text x="925" y="193" font-size="11" fill="#166534" text-anchor="middle">API key cache, Lua rate limiter,</text>
+    <text x="925" y="208" font-size="10" fill="#15803d" text-anchor="middle">idempotency leases, ShedLock</text>
+
+    <rect x="805" y="240" width="240" height="66" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="925" y="265" font-size="13" font-weight="700" fill="#14532d" text-anchor="middle">Apache Kafka (:29092)</text>
+    <text x="925" y="283" font-size="11" fill="#166534" text-anchor="middle">payments.events, orders.events</text>
+    <text x="925" y="298" font-size="10" fill="#15803d" text-anchor="middle">refund.events, settlement.events</text>
+
+    <rect x="805" y="330" width="240" height="72" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="925" y="355" font-size="13" font-weight="700" fill="#14532d" text-anchor="middle">Observability stack</text>
+    <text x="925" y="373" font-size="11" fill="#166534" text-anchor="middle">Prometheus (:9090), Grafana (:3000)</text>
+    <text x="925" y="390" font-size="10" fill="#15803d" text-anchor="middle">Zipkin (:9411), JSON MDC logs</text>
+  </g>
+
+  <!-- Primary flows (solid black) -->
+  <path d="M 165 108 L 220 185" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 165 218 L 220 218" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 165 328 L 220 250" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+
+  <path d="M 365 185 L 445 91" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 365 205 L 445 191" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 365 230 L 445 291" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 365 255 L 445 387" stroke="#1f2937" stroke-width="1.6" fill="none" marker-end="url(#arrow-black)"/>
+
+  <!-- Service to service -->
+  <path d="M 560 148 L 560 127" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 560 234 L 560 255" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+
+  <!-- Services to data stores -->
+  <path d="M 675 91 L 805 82" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 675 175 L 805 95" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 675 285 L 805 108" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 675 370 L 805 120" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+
+  <path d="M 675 195 L 805 183" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 675 215 L 805 268" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+  <path d="M 805 282 L 675 385" stroke="#1f2937" stroke-width="1.5" fill="none" marker-end="url(#arrow-black)"/>
+
+  <!-- Static dependencies (dashed grey) -->
+  <path d="M 292 286 L 310 445" stroke="#9ca3af" stroke-width="1.3" stroke-dasharray="5,4" fill="none" marker-end="url(#arrow-gray)"/>
+  <path d="M 520 426 L 380 445" stroke="#9ca3af" stroke-width="1.3" stroke-dasharray="5,4" fill="none" marker-end="url(#arrow-gray)"/>
+  <path d="M 572 426 L 572 445" stroke="#9ca3af" stroke-width="1.3" stroke-dasharray="5,4" fill="none" marker-end="url(#arrow-gray)"/>
+  <path d="M 675 405 L 805 366" stroke="#9ca3af" stroke-width="1.3" stroke-dasharray="5,4" fill="none" marker-end="url(#arrow-gray)"/>
+</svg>

@@ -1,0 +1,24 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Gateway [icon: server, color: blue]
+Merchant Service [icon: server, color: blue]
+Payment Service [icon: server, color: blue]
+Vault Service [icon: server, color: blue]
+Operations Service [icon: server, color: blue]
+
+Eureka Registry [icon: network, color: gray]
+
+Gateway -- Eureka Registry
+Merchant Service -- Eureka Registry
+Payment Service -- Eureka Registry
+Vault Service -- Eureka Registry
+Operations Service -- Eureka Registry
+
+Eureka Registry > Gateway
+Eureka Registry > Merchant Service
+Eureka Registry > Payment Service
+Eureka Registry > Vault Service
+Eureka Registry > Operations Service

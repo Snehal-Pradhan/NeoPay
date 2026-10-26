@@ -1,0 +1,68 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Merchant Server [icon: user, color: blue]
+Checkout [icon: smartphone, color: blue]
+Ops Console [icon: users, color: blue]
+
+API Gateway [icon: server, color: gray]
+
+Merchant Service [icon: server, color: gray]
+Payment Service [icon: server, color: gray]
+Vault Service [icon: server, color: gray]
+Operations Service [icon: server, color: gray]
+Config Service [icon: settings, color: gray]
+Discovery Service [icon: network, color: gray]
+
+Postgres [icon: database, color: green]
+Redis [icon: database, color: green]
+Kafka [icon: layers, color: green]
+Zipkin [icon: activity, color: green]
+Prometheus [icon: gauge, color: green]
+
+Merchant Server > API Gateway
+Checkout > API Gateway
+Ops Console > API Gateway
+
+API Gateway > Merchant Service
+API Gateway > Payment Service
+API Gateway > Vault Service
+API Gateway > Operations Service
+
+Payment Service > Merchant Service
+Payment Service > Vault Service
+Operations Service > Payment Service
+Operations Service > Merchant Service
+
+Merchant Service > Postgres
+Payment Service > Postgres
+Vault Service > Postgres
+Operations Service > Postgres
+
+API Gateway > Redis
+Merchant Service > Redis
+Payment Service > Redis
+
+Payment Service > Kafka
+Operations Service > Kafka
+
+Merchant Service -- Discovery Service
+Payment Service -- Discovery Service
+Vault Service -- Discovery Service
+Operations Service -- Discovery Service
+API Gateway -- Discovery Service
+Merchant Service -- Config Service
+Payment Service -- Config Service
+Vault Service -- Config Service
+Operations Service -- Config Service
+API Gateway -- Config Service
+
+Merchant Service -- Zipkin
+Payment Service -- Zipkin
+Vault Service -- Zipkin
+Operations Service -- Zipkin
+API Gateway -- Prometheus
+Payment Service -- Prometheus
+Operations Service -- Prometheus

@@ -30,6 +30,8 @@ Packages use the `com.snehal.neopay` namespace throughout.
 
 ## Architecture
 
+![NeoPay architecture](docs/diagrams/architecture-overview.svg)
+
 ```text
                          ┌──────────────────────┐
                          │    API Gateway :8080 │
@@ -197,6 +199,23 @@ Quality gates enforced on `verify`:
 Thresholds are ratchets: they were raised after each test-hardening pass and are
 never lowered. Full detail lives in `TESTING.md`.
 
+## Performance
+
+Measured end to end through the gateway on the local seven-service stack: 900 order+payment
+flows (1,800 HTTP requests) at a constant 15 flows/sec for 60 seconds, spread across 20
+separate merchant API keys.
+
+| Metric | Measured | Threshold |
+|---|---:|---:|
+| Throughput | 30.0 req/s | — |
+| Error rate | 0.00% (0/1,800) | < 1% |
+| `POST /v1/orders` p95 | 80.9 ms | < 250 ms |
+| `POST /v1/payments` p95 | 41.2 ms | < 350 ms |
+| Overall p95 | 42.8 ms | < 300 ms |
+
+Reproduce with `./perf/run-k6.sh` (provisions its own merchants and keys). Raw artifact:
+`perf/k6-summary.json`. Method, limits and the service-level baseline: `docs/PERFORMANCE.md`.
+
 ## Verified flows
 
 Executed both locally and on every push by the `end-to-end` CI job, through the gateway:
@@ -231,6 +250,7 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 | `docs/runbook.md` | Outbox stall, DLQ, Redis loss, Kafka lag, settlement failure |
 | `docs/c4/` | Context, container, and payment component diagrams |
 | `docs/adr/` | Eight architecture decision records |
+| `docs/diagrams/` | SVG overview and eight Eraser.io service architecture definitions |
 | `ROADMAP.md` | Remaining engineering gates and scoring |
 | `CHANGELOG.md` | Phase-by-phase history |
 

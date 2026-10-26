@@ -1,0 +1,43 @@
+direction right
+colorMode pastel
+styleMode shadow
+typeface clean
+
+Gateway [icon: server, color: blue]
+
+AuthController [icon: key, color: gray]
+ApiKeyController [icon: key, color: gray]
+WebhookConfigController [icon: webhook, color: gray]
+InternalMerchantController [icon: file-text, color: gray]
+
+AuthService [icon: shield, color: gray]
+ApiKeyService [icon: key, color: gray]
+WebhookConfigService [icon: webhook, color: gray]
+MerchantLookupService [icon: list, color: gray]
+KycService [icon: badge-check, color: gray]
+RiskService [icon: shield, color: gray]
+
+Postgres [icon: database, color: green]
+Redis [icon: database, color: green]
+JwtUtil [icon: lock, color: gray]
+
+Gateway > AuthController
+Gateway > ApiKeyController
+Gateway > WebhookConfigController
+Gateway > InternalMerchantController
+
+AuthController > AuthService
+AuthController > JwtUtil
+ApiKeyController > ApiKeyService
+WebhookConfigController > WebhookConfigService
+InternalMerchantController > MerchantLookupService
+InternalMerchantController > KycService
+InternalMerchantController > RiskService
+
+AuthService > Postgres
+ApiKeyService > Postgres
+ApiKeyService > Redis
+WebhookConfigService > Postgres
+MerchantLookupService > Postgres
+KycService > Postgres
+RiskService > Postgres
