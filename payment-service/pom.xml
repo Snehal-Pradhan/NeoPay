@@ -209,7 +209,15 @@
                 <version>3.5.2</version>
                 <configuration>
                     <skip>${jib.skip}</skip>
-                    <to>
+                    <container>
+                        <user>1000:1000</user>
+                        <workingDirectory>/app</workingDirectory>
+                        <jvmFlags>
+                            <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                            <jvmFlag>-XX:+UseZGC</jvmFlag>
+                        </jvmFlags>
+                    </container>
+                                        <to>
                         <image>docker.io/neopay/neopay-${project.artifactId}:${project.version}</image>
                         <tags>
                             <tag>latest</tag>

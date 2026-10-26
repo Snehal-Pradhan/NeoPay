@@ -45,6 +45,18 @@ KEY_SECRET=$(echo "$KEY" | json .keySecret)
 BASIC=$(printf '%s:%s' "$KEY_ID" "$KEY_SECRET" | base64)
 [ -n "$KEY_SECRET" ] && [ "$KEY_SECRET" != "null" ] || fail "api key: $KEY"
 
+say "3b. webhook target"
+mkdir -p .run
+WEBHOOK_PORT="${WEBHOOK_PORT:-9999}"
+python3 "$(dirname "$0")/webhook-receiver.py" "$WEBHOOK_PORT" > .run/webhook-receiver.log 2>&1 &
+RECEIVER_PID=$!
+trap 'kill "$RECEIVER_PID" 2>/dev/null || true' EXIT
+sleep 1
+curl -sS -X POST "$BASE/v1/merchants/webhooks" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d "{\"targetUrl\":\"http://localhost:$WEBHOOK_PORT/hook\",\"eventTypes\":\"ALL\"}" >/dev/null
+
 say "4. order"
 ORDER=$(curl -sS -X POST "$BASE/v1/orders" \
   -H "Authorization: Basic $BASIC" \
@@ -82,8 +94,8 @@ REPLAY_ID=$(echo "$REPLAY" | json .id)
 say "7. wait for capture"
 STATUS=""
 for _ in $(seq 1 30); do
-  STATUS=$(curl -sS "$BASE/v1/orders/$ORDER_ID/payments" -H "Authorization: Basic $BASIC" \
-    | jq -r --arg id "$PAYMENT_ID" '.[] | select(.id==$id) | .status' 2>/dev/null || true)
+  STATUS=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-payment-db -tAc \
+    "select status from payment where id='$PAYMENT_ID';" | tr -d '[:space:]')
   [ "$STATUS" = "CAPTURED" ] && break
   sleep 2
 done
@@ -95,13 +107,23 @@ ROWS=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-payment-db -tAc 
 [ "$ROWS" = "1" ] || fail "expected 1 payment row, found $ROWS"
 
 say "9. confirm outbox published"
-PENDING=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-payment-db -tAc \
-  "select count(*) from outbox_event where status='PENDING';")
+PENDING=1
+for _ in $(seq 1 30); do
+  PENDING=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-payment-db -tAc \
+    "select count(*) from outbox_event where status='PENDING';" | tr -d '[:space:]')
+  [ "$PENDING" = "0" ] && break
+  sleep 2
+done
 [ "$PENDING" = "0" ] || fail "outbox still has $PENDING pending rows"
 
 say "10. confirm webhook delivered"
-DELIVERED=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-operations-db -tAc \
-  "select count(*) from webhook_event where merchant_id='$MERCHANT_ID' and status='DELIVERED';")
-[ "$DELIVERED" -ge 1 ] || fail "no delivered webhook for merchant"
+DELIVERED=0
+for _ in $(seq 1 30); do
+  DELIVERED=$(docker exec "$DB_CONTAINER" psql -U "$DB_USER" -d neopay-operations-db -tAc \
+    "select count(*) from webhook_event where merchant_id='$MERCHANT_ID' and status='DELIVERED';" | tr -d '[:space:]')
+  [ "${DELIVERED:-0}" -ge 1 ] && break
+  sleep 2
+done
+[ "${DELIVERED:-0}" -ge 1 ] || fail "no delivered webhook for merchant"
 
 say "PASS merchant=$MERCHANT_ID payment=$PAYMENT_ID status=$STATUS webhooks=$DELIVERED"

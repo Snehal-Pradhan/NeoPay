@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - infra/namespace.yaml
+  - infra/configmap.yaml
+  - infra/network-policies.yaml
+  - stateful/postgres.yaml
+  - stateful/redis.yaml
+  - stateful/kafka.yaml
+  - stateful/zipkin.yaml
+  - stateful/prometheus.yaml
+  - stateful/grafana.yaml
+  - services/config-service.yaml
+  - services/api-gateway.yaml
+  - services/merchant-service.yaml
+  - services/payment-service.yaml
+  - services/operations-service.yaml
+  - services/vault-service.yaml
+
+secretGenerator:
+  - name: app-secrets
+    namespace: neopay-core
+    envs:
+      - k8s-secrets.env.example
+
+generatorOptions:
+  disableNameSuffixHash: true

@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-service
+  namespace: neopay-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-service
+  template:
+    metadata:
+      labels:
+        app: vault-service
+    spec:
+      containers:
+      - name: vault-service
+        image: neopay/neopay-vault-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9040
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: VAULT_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: VAULT_DB_PASSWORD
+        - name: VAULT_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: VAULT_MASTER_KEY
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '1'
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9040
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9040
+          failureThreshold: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9040
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-service
+  namespace: neopay-core
+spec:
+  selector:
+    app: vault-service
+  ports:
+  - port: 80
+    targetPort: 9040

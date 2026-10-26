@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operations-service
+  namespace: neopay-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: operations-service
+  template:
+    metadata:
+      labels:
+        app: operations-service
+    spec:
+      containers:
+      - name: operations-service
+        image: neopay/neopay-operations-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9030
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: OPERATIONS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: OPERATIONS_DB_PASSWORD
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: '1'
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9030
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9030
+          failureThreshold: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9030
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: operations-service
+  namespace: neopay-core
+spec:
+  selector:
+    app: operations-service
+  ports:
+  - port: 80
+    targetPort: 9030

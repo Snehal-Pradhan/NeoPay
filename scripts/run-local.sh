@@ -14,6 +14,9 @@ export DB_USER="${DB_USER:-neopay}"
 export DB_PASSWORD="${DB_PASSWORD:-password}"
 export CONFIG_SERVER_URL="${CONFIG_SERVER_URL:-http://localhost:8888}"
 export EUREKA_URL="${EUREKA_URL:-http://localhost:8761/eureka/}"
+# Simulators are opt-in; local and CI stacks need them to settle the flow.
+export PAYMENT_SIMULATOR_ENABLED="${PAYMENT_SIMULATOR_ENABLED:-true}"
+export OPERATIONS_SETTLEMENT_SIMULATOR_ENABLED="${OPERATIONS_SETTLEMENT_SIMULATOR_ENABLED:-true}"
 
 mkdir -p .run/logs
 
