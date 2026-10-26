@@ -61,7 +61,7 @@ KEY=$(curl -sS -X POST "$BASE/v1/merchants/api-keys" \
   -d '{"environment":"TEST"}')
 KEY_ID=$(echo "$KEY" | json .keyId)
 KEY_SECRET=$(echo "$KEY" | json .keySecret)
-BASIC=$(printf '%s:%s' "$KEY_ID" "$KEY_SECRET" | base64)
+BASIC=$(printf '%s:%s' "$KEY_ID" "$KEY_SECRET" | base64 | tr -d '\n')
 [ -n "$KEY_SECRET" ] && [ "$KEY_SECRET" != "null" ] || fail "api key: $KEY"
 
 say "3b. webhook target"
