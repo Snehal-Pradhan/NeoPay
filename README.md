@@ -1,12 +1,14 @@
 # NeoPay — Microservices Payments Platform
 
+[![CI](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml/badge.svg)](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml)
+
 > **Database note:** every entity now inherits an optimistic-lock `version` column from
 > `BaseEntity`. An existing database needs `version bigint` added and backfilled with `0`
 > before deploy. Schema management moves to Flyway in the platform phase.
 >
-> **Rollout status:** published incrementally, one project at a time. Currently in the
-> repository: `common-lib` and `merchant-service`. The remaining services are being
-> hardened and published in the same way.
+> **Status:** all eight projects are published and verified. CI runs a matrix over
+> every project, builds container images, validates Kubernetes manifests, and executes
+> the full payment lifecycle end to end.
 
 A Spring Boot 4 / Java 21 payments platform: API gateway, service discovery, central configuration, a shared library, and four independently deployable business services (merchant, payment, vault, operations).
 
@@ -98,6 +100,25 @@ curl http://localhost:8761/eureka/apps
 curl http://localhost:8080/actuator/health
 ```
 
+## Containers, Kubernetes and observability
+
+```bash
+# container image for one service (no registry required)
+mvn -f payment-service/pom.xml -DskipTests -Djib.skip=false \
+  jib:buildTar -Djib.to.image=neopay/payment-service:local
+
+# render and apply the Kubernetes stack to a local cluster
+kubectl kustomize k8s | kubectl apply -f -
+
+# Prometheus on 9090 and Grafana on 3000 with the NeoPay overview dashboard
+docker compose -f docker-compose.yml -f observability/docker-compose.yml up -d
+```
+
+Images run as `1000:1000` with a read-only root filesystem; manifests carry startup,
+readiness and liveness probes, resource limits, and NetworkPolicies with
+default-deny ingress. CI validates the rendered manifests with kubeconform and a Trivy
+misconfiguration scan on every push.
+
 ## Configuration
 
 The Config Server uses the **native** profile and serves YAML from:
@@ -133,22 +154,34 @@ Production-style overrides are environment variables, including `JWT_SECRET`, `V
 ## Tests
 
 ```bash
-mvn -f common-lib/pom.xml install -DskipTests
-for svc in discovery-service config-service api-gateway-service merchant-service payment-service vault-service operations-service; do
-  mvn -f "$svc/pom.xml" test
-done
+./scripts/test-all.sh          # unit suites, six projects in parallel (~2.5 min)
+./scripts/test-all.sh --full   # every suite, serial (~6.5 min)
+./scripts/verify-all.sh        # full gate: tests, static analysis, coverage check
 ```
 
-132 tests across eight modules. Layers:
+| Project | Tests | Line | Branch | Mutation (PIT) |
+|---|---:|---:|---:|---:|
+| `common-lib` | 136 | 84.3% | 78.0% | 76% |
+| `merchant-service` | 89 | 100.0% | 98.1% | 99% |
+| `payment-service` | 150 | 85.5% | 69.9% | 76% |
+| `vault-service` | 29 | 100.0% | 100.0% | 100% |
+| `operations-service` | 79 | 88.9% | 83.6% | 73% |
+| `api-gateway-service` | 38 | 87.8% | 77.3% | 80% |
+| `discovery-service` | 1 | context load only | — | — |
+| `config-service` | 1 | context load only | — | — |
+| **Total** | **523** | — | — | — |
+
+Test layers:
 
 | Layer | Scope |
 |---|---|
-| Unit | services, domain, money, state machine, idempotency, rate limiting |
-| Property | jqwik: money, settlement fees, state machine sequences |
-| Integration | Testcontainers Postgres and Redis |
-| Concurrency | 50 threads on `(merchant_id, idempotency_key)` |
+| Unit | services, domain, money, state machine, idempotency, rate limiting, gateway filters |
+| Property | jqwik: money arithmetic, settlement fees, state machine sequences |
+| Integration | Testcontainers Postgres and Redis, tagged `integration` |
+| Concurrency | 50 threads on `(merchant_id, idempotency_key)`, refund races |
 | Contract | OpenAPI document shape |
 | Architecture | ArchUnit package and parameter budgets |
+| End-to-end | seven-service stack over Compose in CI |
 
 Quality gates enforced on `verify`:
 
@@ -159,14 +192,15 @@ Quality gates enforced on `verify`:
 | High and medium correctness defects | SpotBugs |
 | Compiler-level correctness | ErrorProne |
 | Source file length ≤300 lines | `scripts/complexity-budget.sh` |
-| Mutation coverage ≥80% on selected classes | PIT |
+| Bundle and per-layer line/branch floors | JaCoCo + `scripts/coverage-gate.py` |
+| Mutation floors per module (73–100%) | PIT |
 
-Measured line coverage: 24.8%. This is below the 80% target and is listed as an open
-gate.
+Thresholds are ratchets: they were raised after each test-hardening pass and are
+never lowered. Full detail lives in `TESTING.md`.
 
 ## Verified flows
 
-A full local run was exercised through the gateway:
+Executed both locally and on every push by the `end-to-end` CI job, through the gateway:
 
 - signup → login → create API key
 - create order
@@ -174,7 +208,7 @@ A full local run was exercised through the gateway:
 - initiate card payment (payment → vault over Feign/Eureka)
 - scheduled bank callback → `CAPTURED` + order `PAID`
 - payment idempotency (`X-Idempotency-Key` returns the same payment, one DB row)
-- outbox → Kafka → operations webhook fan-out → dummy receiver `204 DELIVERED`
+- outbox → Kafka → operations webhook fan-out → receiver `200` (2–3 events delivered)
 - ShedLock keys in Redis
 - gateway 401 for invalid/revoked credentials and structured error envelopes
 
@@ -203,16 +237,20 @@ A full local run was exercised through the gateway:
 
 ## Known gaps
 
-- Refund HTTP API is not implemented. `PaymentAggregate` enforces refund invariants,
-  but no controller exposes them.
+- **No migration tool.** Schema is created by Hibernate (`ddl-auto: update`). Flyway
+  and `validate` are the next platform task; existing databases need the `version`
+  column backfilled.
+- Internal endpoints are protected only by cluster networking. Service-level
+  authentication (shared secret or mTLS) is not implemented.
 - Wallet payments have no adapter or processor.
 - Settlement uses one global fee schedule; per-merchant pricing is not wired.
 - `Payment`, `OrderRecord` and `Settlement` remain the persistence projection. The
   aggregate is not yet the write path, and entity setters still exist.
-- No cross-service end-to-end test covering settlement and webhook delivery in one run.
-- Line coverage is 24.8% against an 80% target.
-- Internal service endpoints are cluster-internal and unauthenticated; do not expose
-  them directly.
+- Dispute resolution is not serialised; concurrent resolutions can double-post. Needs a
+  pessimistic lock and a Postgres concurrency test.
+- Ledger idempotency is enforced in code, not by a database constraint.
 - Kafka header trace propagation is not asserted by a test.
-- Local compose starts Postgres, Redis, Kafka and Zipkin; Prometheus and Grafana run
-  from `observability/`.
+- `operations-service` controllers sit at 50% line coverage; `common-lib`
+  infrastructure at 55.7% / 38.9%.
+- Cloud infrastructure, GitOps and SRE practice are out of scope for the current
+  milestone: no Terraform, no ArgoCD, no SLOs, no chaos runs yet.

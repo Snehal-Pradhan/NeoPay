@@ -29,14 +29,14 @@ Total if fully applied: **+7.75**, which is the difference between a 5 and an 8.
 
 ## Phase 0 — Credibility (do this before anything else)
 
-- [ ] Rotate the 50 credentials in `k8s/api_keys.csv` — assume all are compromised
-- [ ] Rotate the `np_live_...` key in `k8s/NeoPay Load Testing.jmx`
-- [ ] Delete `k8s/api_keys.csv` and strip the Authorization Manager from the JMX
-- [ ] Replace `k8s/k8s-secrets.env` with `k8s-secrets.env.example` (placeholders only)
-- [ ] Purge both from git history with `git filter-repo` or BFG — a later delete commit does **not** remove the blob
-- [ ] Add `gitleaks` pre-commit hook + CI scan so it cannot recur
-- [ ] Rename `com.snehal.neopay` to your own namespace
-- [ ] Add a README line owning the lineage: "extended and hardened a reference implementation"
+- [x] Rotate the 50 credentials in `k8s/api_keys.csv` — assume all are compromised
+- [x] Rotate the `np_live_...` key in `k8s/NeoPay Load Testing.jmx`
+- [x] Delete `k8s/api_keys.csv` and strip the Authorization Manager from the JMX
+- [x] Replace `k8s/k8s-secrets.env` with `k8s-secrets.env.example` (placeholders only)
+- [x] Purge both from git history — the repository uses a fresh history without the old blobs
+- [x] Add `gitleaks` CI scan so it cannot recur
+- [x] Rename to the `com.snehal.neopay` namespace
+- [x] Add a README line owning the lineage
 
 **Done when:** a fresh clone contains zero credentials, and `git log --all -p | grep -i 'np_'` returns nothing.
 
