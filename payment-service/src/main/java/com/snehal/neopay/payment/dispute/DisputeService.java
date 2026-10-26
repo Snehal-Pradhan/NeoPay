@@ -61,7 +61,7 @@ public class DisputeService {
 
     @Transactional
     public Dispute resolve(UUID disputeId, DisputeStatus outcome) {
-        Dispute dispute = disputeRepository.findById(disputeId)
+        Dispute dispute = disputeRepository.findByIdForUpdate(disputeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Dispute", disputeId));
         if (dispute.getStatus() == DisputeStatus.WON || dispute.getStatus() == DisputeStatus.LOST) {
             throw new BusinessRuleViolationException("DISPUTE_ALREADY_RESOLVED",

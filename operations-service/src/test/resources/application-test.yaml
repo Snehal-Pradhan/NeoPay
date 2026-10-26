@@ -1,4 +1,6 @@
 spring:
+  flyway:
+    enabled: false
   cloud:
     config:
       enabled: false

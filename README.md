@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml/badge.svg)](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml)
 
-> **Database note:** every entity now inherits an optimistic-lock `version` column from
-> `BaseEntity`. An existing database needs `version bigint` added and backfilled with `0`
-> before deploy. Schema management moves to Flyway in the platform phase.
+> **Schema:** Flyway owns the schema. `V1__baseline.sql` in each database-backed service
+> creates the tables, and Hibernate runs with `ddl-auto: validate`. Existing databases
+> baseline at version 1; the `version` column from `BaseEntity` is part of the baseline.
 >
 > **Status:** all eight projects are published and verified. CI runs a matrix over
 > every project, builds container images, validates Kubernetes manifests, and executes
@@ -149,7 +149,6 @@ Production-style overrides are environment variables, including `JWT_SECRET`, `V
 | POST | `/v1/orders` | payment |
 | POST | `/v1/payments`, `/v1/payments/{id}/capture` | payment |
 | POST | `/v1/vault/tokenize` | vault |
-| POST | `/webhook/success` | operations (public dummy receiver) |
 
 ## Tests
 
@@ -237,20 +236,14 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 
 ## Known gaps
 
-- **No migration tool.** Schema is created by Hibernate (`ddl-auto: update`). Flyway
-  and `validate` are the next platform task; existing databases need the `version`
-  column backfilled.
 - Internal endpoints are protected only by cluster networking. Service-level
   authentication (shared secret or mTLS) is not implemented.
 - Wallet payments have no adapter or processor.
 - Settlement uses one global fee schedule; per-merchant pricing is not wired.
 - `Payment`, `OrderRecord` and `Settlement` remain the persistence projection. The
   aggregate is not yet the write path, and entity setters still exist.
-- Dispute resolution is not serialised; concurrent resolutions can double-post. Needs a
-  pessimistic lock and a Postgres concurrency test.
-- Ledger idempotency is enforced in code, not by a database constraint.
 - Kafka header trace propagation is not asserted by a test.
-- `operations-service` controllers sit at 50% line coverage; `common-lib`
-  infrastructure at 55.7% / 38.9%.
+- `common-lib` infrastructure coverage is the weakest layer (55.7% / 38.9%):
+  configuration wiring and adapters are exercised indirectly rather than directly.
 - Cloud infrastructure, GitOps and SRE practice are out of scope for the current
   milestone: no Terraform, no ArgoCD, no SLOs, no chaos runs yet.

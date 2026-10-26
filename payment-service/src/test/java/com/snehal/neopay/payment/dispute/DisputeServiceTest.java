@@ -91,7 +91,7 @@ class DisputeServiceTest {
     @Test
     void wonDisputeReversesHold() {
         Dispute dispute = dispute(DisputeStatus.OPENED, LedgerAccount.MERCHANT_PAYABLE, 300);
-        when(disputeRepository.findById(dispute.getId())).thenReturn(Optional.of(dispute));
+        when(disputeRepository.findByIdForUpdate(dispute.getId())).thenReturn(Optional.of(dispute));
         when(disputeRepository.save(any(Dispute.class))).thenAnswer(i -> i.getArgument(0));
 
         service.resolve(dispute.getId(), DisputeStatus.WON);
@@ -104,7 +104,7 @@ class DisputeServiceTest {
     @Test
     void lostDisputeMovesHoldToPlatformReceivable() {
         Dispute dispute = dispute(DisputeStatus.OPENED, LedgerAccount.MERCHANT_PAYABLE, 300);
-        when(disputeRepository.findById(dispute.getId())).thenReturn(Optional.of(dispute));
+        when(disputeRepository.findByIdForUpdate(dispute.getId())).thenReturn(Optional.of(dispute));
         when(disputeRepository.save(any(Dispute.class))).thenAnswer(i -> i.getArgument(0));
 
         service.resolve(dispute.getId(), DisputeStatus.LOST);
@@ -117,7 +117,7 @@ class DisputeServiceTest {
     @Test
     void resolvingTwiceIsRejected() {
         Dispute dispute = dispute(DisputeStatus.WON, LedgerAccount.MERCHANT_PAYABLE, 300);
-        when(disputeRepository.findById(dispute.getId())).thenReturn(Optional.of(dispute));
+        when(disputeRepository.findByIdForUpdate(dispute.getId())).thenReturn(Optional.of(dispute));
 
         assertThrows(BusinessRuleViolationException.class,
                 () -> service.resolve(dispute.getId(), DisputeStatus.LOST));

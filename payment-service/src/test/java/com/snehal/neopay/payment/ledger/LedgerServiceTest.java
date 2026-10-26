@@ -103,4 +103,17 @@ class LedgerServiceTest {
 
         verify(repository, org.mockito.Mockito.times(1)).saveAll(any());
     }
+
+    @Test
+    void losingAConcurrentInsertRaceIsTreatedAsReplay() {
+        UUID paymentId = UUID.randomUUID();
+        when(repository.existsByTransactionIdAndAccount(any(), any())).thenReturn(false);
+        when(repository.saveAll(any())).thenThrow(
+                new org.springframework.dao.DataIntegrityViolationException(
+                        "duplicate key value violates unique constraint ux_ledger_line_txn_account"));
+
+        UUID result = service.postCapture(paymentId, Money.inr(1_000));
+
+        assertEquals(paymentId, result);
+    }
 }

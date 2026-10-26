@@ -27,7 +27,10 @@ import java.util.UUID;
         @Index(name = "idx_ledger_transaction", columnList = "transaction_id"),
         @Index(name = "idx_ledger_reference", columnList = "reference_type, reference_id"),
         @Index(name = "idx_ledger_account", columnList = "account")
-})
+    },
+    uniqueConstraints = @jakarta.persistence.UniqueConstraint(
+            name = "ux_ledger_line_txn_account", columnNames = {"transaction_id", "account"}))
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

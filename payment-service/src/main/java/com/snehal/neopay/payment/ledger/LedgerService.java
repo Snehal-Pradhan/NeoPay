@@ -48,10 +48,16 @@ public class LedgerService {
 
         PostingContext context = new PostingContext(transactionId, amount.getCurrency(),
                 reference, LocalDateTime.now());
-        repository.saveAll(List.of(
-                line(context, debit, units, 0),
-                line(context, credit, 0, units)
-        ));
+        try {
+            repository.saveAll(List.of(
+                    line(context, debit, units, 0),
+                    line(context, credit, 0, units)
+            ));
+        } catch (org.springframework.dao.DataIntegrityViolationException raced) {
+            // The unique index on (transaction_id, account) is the authority: a
+            // concurrent writer posted this pair first, so this attempt is a replay.
+            log.debug("Ledger pair raced, treating as replay, transaction={}", transactionId);
+        }
         return transactionId;
     }
 

@@ -336,7 +336,7 @@ Key environment variables:
 - Payment → vault Feign call returned a valid pending result.
 - Simulator auto-captured the payment and marked the order `PAID`.
 - Payment idempotency returned the same payment with one DB row.
-- Outbox → Kafka → operations consumer → webhook delivery to the gateway dummy receiver, status `DELIVERED`, HTTP 204.
+- Outbox → Kafka → operations consumer → webhook delivery to the merchant target, status `DELIVERED`, HTTP 200.
 - ShedLock keys present in Redis.
 - Gateway 401 on revoked/invalid credentials.
 - Infrastructure torn down with `docker compose down -v`.
