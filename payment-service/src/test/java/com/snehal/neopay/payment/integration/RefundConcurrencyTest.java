@@ -14,6 +14,7 @@ import com.snehal.neopay.payment.ledger.LedgerService;
 import com.snehal.neopay.payment.repository.OrderRepository;
 import com.snehal.neopay.payment.repository.PaymentRepository;
 import com.snehal.neopay.payment.service.RefundService;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("integration")
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")

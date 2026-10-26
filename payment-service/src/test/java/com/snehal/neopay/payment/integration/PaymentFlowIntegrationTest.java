@@ -16,6 +16,7 @@ import com.snehal.neopay.payment.repository.PaymentRepository;
 import com.snehal.neopay.payment.service.PaymentService;
 import com.snehal.neopay.common.domain.MerchantId;
 import com.snehal.neopay.common.domain.PaymentId;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+@Tag("integration")
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")

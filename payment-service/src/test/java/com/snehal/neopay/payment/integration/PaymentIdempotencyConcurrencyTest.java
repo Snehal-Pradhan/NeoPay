@@ -8,6 +8,7 @@ import com.snehal.neopay.payment.entity.OrderRecord;
 import com.snehal.neopay.payment.entity.Payment;
 import com.snehal.neopay.payment.repository.OrderRepository;
 import com.snehal.neopay.payment.repository.PaymentRepository;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("integration")
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")

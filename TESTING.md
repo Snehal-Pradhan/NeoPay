@@ -59,6 +59,26 @@ mvn -f common-lib/pom.xml org.pitest:pitest-maven:mutationCoverage@full-baseline
 # single test class
 mvn -f common-lib/pom.xml test -Dtest='MoneyTest,FixedWindowRateLimiterTest'
 
+# fast inner loop: every project in parallel, Testcontainers suites excluded
+./scripts/test-all.sh
+
+# full validation, including @Tag("integration") suites
+./scripts/test-all.sh --full
+
+# one project only
+./scripts/test-all.sh --only payment-service
+
+Measured on the development machine (2026-10-26):
+
+| Mode | Wall time | Tests | Notes |
+|---|---:|---:|---|
+| Serial, all suites | 391s | 523 | `mvn test` per project, one after another |
+| Parallel, unit only (`test-all.sh`) | 156s | 509 | 4 projects at a time, `@Tag("integration")` excluded |
+| Parallel, all suites | 1061s | 523 | **do not use** — six concurrent builds plus Docker contend |
+
+`--full` therefore runs serially. Integration tests are not a good parallel
+workload on a single machine; they are parallelised in CI by the job matrix instead.
+
 # all services
 ./scripts/verify-all.sh
 ```

@@ -12,6 +12,7 @@ import com.snehal.neopay.payment.gateway.dto.PaymentResult;
 import com.snehal.neopay.payment.repository.OrderRepository;
 import com.snehal.neopay.payment.service.PaymentService;
 import com.snehal.neopay.common.domain.MerchantId;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.when;
  * The measurement covers order insert, payment insert, state transition,
  * outbox write and the (mocked) gateway call.
  */
+@Tag("integration")
 @Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
