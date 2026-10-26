@@ -116,10 +116,7 @@ public class GlobalExceptionHandler {
                 "Parameter '" + ex.getName() + "' has an invalid value", request);
     }
 
-    @ExceptionHandler({
-            org.springframework.dao.OptimisticLockingFailureException.class,
-            jakarta.persistence.OptimisticLockException.class
-    })
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
     public ResponseEntity<ProblemDetail> handleConcurrentModification(Exception ex,
                                                                      HttpServletRequest request) {
         log.warn("Concurrent modification on {} {}: {}",

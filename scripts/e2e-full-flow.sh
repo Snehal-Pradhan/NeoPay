@@ -23,10 +23,15 @@ fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 json() { jq -r "$1"; }
 
 say "1. signup"
-SIGNUP=$(curl -sS -X POST "$BASE/v1/auth/signup" \
-  -H 'Content-Type: application/json' \
-  -d "{\"name\":\"E2E Merchant\",\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\",\"businessType\":\"LLP\"}")
-MERCHANT_ID=$(echo "$SIGNUP" | json .id)
+SIGNUP=""
+for _ in $(seq 1 30); do
+  SIGNUP=$(curl -sS -X POST "$BASE/v1/auth/signup" \
+    -H 'Content-Type: application/json' \
+    -d "{\"name\":\"E2E Merchant\",\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\",\"businessType\":\"LLP\"}")
+  MERCHANT_ID=$(echo "$SIGNUP" | json .id 2>/dev/null || true)
+  [ -n "$MERCHANT_ID" ] && [ "$MERCHANT_ID" != "null" ] && break
+  sleep 2
+done
 [ -n "$MERCHANT_ID" ] && [ "$MERCHANT_ID" != "null" ] || fail "signup: $SIGNUP"
 
 say "2. login"

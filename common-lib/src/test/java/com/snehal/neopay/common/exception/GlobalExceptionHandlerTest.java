@@ -208,13 +208,4 @@ class GlobalExceptionHandlerTest {
                 response.getBody().getProperties().get("errorCode"));
     }
 
-    @Test
-    void jpaOptimisticLockMapsToConflict() {
-        ResponseEntity<ProblemDetail> response = handler.handleConcurrentModification(
-                new jakarta.persistence.OptimisticLockException("stale"), request);
-
-        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        assertEquals("CONCURRENT_MODIFICATION",
-                response.getBody().getProperties().get("errorCode"));
-    }
 }

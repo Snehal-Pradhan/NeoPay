@@ -92,7 +92,7 @@ jobs:
 
       - name: Trivy misconfiguration scan
         run: |
-          docker run --rm -v "$PWD:/src" aquasecurity/trivy:0.57.1 \
+          docker run --rm -v "$PWD:/src" aquasec/trivy:0.57.1 \
             config --severity CRITICAL --exit-code 1 /src/k8s
 
   images:
@@ -124,8 +124,8 @@ jobs:
 
       - name: Build container image
         run: |
-          mvn -B -q -f ${{ matrix.module }}/pom.xml -DskipTests -Djib.skip=false \
-            jib:buildTar -Djib.to.image=neopay/${{ matrix.module }}:ci
+          mvn -B -q -f ${{ matrix.module }}/pom.xml -DskipTests compile \
+            jib:buildTar -Djib.skip=false -Djib.to.image=neopay/${{ matrix.module }}:ci
           test -s ${{ matrix.module }}/target/jib-image.tar
           ls -lh ${{ matrix.module }}/target/jib-image.tar
 
