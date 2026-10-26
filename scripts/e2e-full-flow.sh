@@ -22,6 +22,20 @@ say() { printf '%s\n' "$*"; }
 fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 json() { jq -r "$1"; }
 
+EUREKA_APPS="${EUREKA_APPS:-http://localhost:8761/eureka/apps}"
+say "0. wait for service registration"
+for svc in MERCHANT-SERVICE PAYMENT-SERVICE VAULT-SERVICE OPERATIONS-SERVICE; do
+  registered=0
+  for _ in $(seq 1 60); do
+    if curl -sS -H 'Accept: application/json' "$EUREKA_APPS" 2>/dev/null | grep -q "\"$svc\""; then
+      registered=1
+      break
+    fi
+    sleep 2
+  done
+  [ "$registered" = "1" ] || fail "$svc never registered with Eureka"
+done
+
 say "1. signup"
 SIGNUP=""
 for _ in $(seq 1 30); do

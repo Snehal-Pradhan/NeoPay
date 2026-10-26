@@ -210,6 +210,7 @@
                 <configuration>
                     <skip>${jib.skip}</skip>
                     <container>
+                        <mainClass>com.snehal.neopay.payment.PaymentServiceApplication</mainClass>
                         <user>1000:1000</user>
                         <workingDirectory>/app</workingDirectory>
                         <jvmFlags>
