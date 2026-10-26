@@ -160,15 +160,15 @@ Production-style overrides are environment variables, including `JWT_SECRET`, `V
 
 | Project | Tests | Line | Branch | Mutation (PIT) |
 |---|---:|---:|---:|---:|
-| `common-lib` | 136 | 84.3% | 78.0% | 76% |
+| `common-lib` | 140 | 84.4% | 78.0% | 76% |
 | `merchant-service` | 89 | 100.0% | 98.1% | 99% |
-| `payment-service` | 150 | 85.5% | 69.9% | 76% |
+| `payment-service` | 153 | 85.5% | 69.9% | 76% |
 | `vault-service` | 29 | 100.0% | 100.0% | 100% |
 | `operations-service` | 79 | 88.9% | 83.6% | 73% |
 | `api-gateway-service` | 38 | 87.8% | 77.3% | 80% |
 | `discovery-service` | 1 | context load only | — | — |
 | `config-service` | 1 | context load only | — | — |
-| **Total** | **523** | — | — | — |
+| **Total** | **530** | — | — | — |
 
 Test layers:
 
@@ -243,7 +243,7 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 - `Payment`, `OrderRecord` and `Settlement` remain the persistence projection. The
   aggregate is not yet the write path, and entity setters still exist.
 - Kafka header trace propagation is not asserted by a test.
-- `common-lib` infrastructure coverage is the weakest layer (55.7% / 38.9%):
-  configuration wiring and adapters are exercised indirectly rather than directly.
+- `common-lib` infrastructure coverage is 82.0% / 77.8%; the remaining gap is
+  auto-configuration wiring, which is exercised indirectly rather than directly.
 - Cloud infrastructure, GitOps and SRE practice are out of scope for the current
   milestone: no Terraform, no ArgoCD, no SLOs, no chaos runs yet.

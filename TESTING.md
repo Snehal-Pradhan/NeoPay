@@ -100,7 +100,7 @@ ignores `includes` on `BUNDLE` rules.
 | domain (`entity`, `money`, `ratelimit`, `iso20022`) | 91% | 82% | — |
 | application (`idempotency`) | 82% | 83% | — |
 | api (`web`, `exception`) | 83% | 85% | — |
-| infrastructure (`audit`, `cache`, `context`, `util`, `domain`) | 55% | 38% | — |
+| infrastructure (`audit`, `cache`, `context`, `util`, `domain`) | 81% | 76% | — |
 | critical classes (`Money`, `FixedWindowRateLimiter`, `RedisIdempotencyStore`) | — | — | 80% |
 
 `merchant-service` (ratcheted 2026-10-26, never lowered):
@@ -149,10 +149,9 @@ mvn -f payment-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
-| bundle | 88% | 83% | 71% (`mutation-baseline`) |
+| bundle | 91% | 83% | 71% (`mutation-baseline`) |
 | domain (`settlement`, `iso20022`, `entity`) | 83% | 74% | — |
-| application (`recon`, `payout`) | 87% | 81% | — |
-| api (`controller`) | 49% | — | — |
+| application (`recon`, `payout`) | 95% | 81% | — |
 | infrastructure (`webhook`, `outbox`) | 94% | 90% | — |
 
 `api-gateway-service` (ratcheted 2026-10-26, never lowered):

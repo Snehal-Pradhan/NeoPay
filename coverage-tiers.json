@@ -42,8 +42,8 @@
           "util",
           "domain"
         ],
-        "line": 0.55,
-        "branch": 0.38
+        "line": 0.81,
+        "branch": 0.76
       }
     }
   },
@@ -204,7 +204,7 @@
   },
   "operations-service": {
     "bundle": {
-      "line": 0.88,
+      "line": 0.91,
       "branch": 0.83
     },
     "mutation": {
@@ -225,15 +225,8 @@
           "recon",
           "payout"
         ],
-        "line": 0.878,
-        "branch": 0.819
-      },
-      "api": {
-        "packages": [
-          "controller"
-        ],
-        "line": 0.495,
-        "branch": 0
+        "line": 0.95,
+        "branch": 0.81
       },
       "infrastructure": {
         "packages": [

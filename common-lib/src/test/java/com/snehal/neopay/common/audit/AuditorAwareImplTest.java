@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AuditorAwareImplTest {
 
@@ -34,5 +35,24 @@ class AuditorAwareImplTest {
     void fallsBackToSystem() {
         assertEquals(Optional.of("SYSTEM"),
                 new AuditorAwareImpl(new MerchantContext()).getCurrentAuditor());
+    }
+
+    @Test
+    void blankKeyIdFallsBackToTheMerchantId() {
+        MerchantContext context = new MerchantContext();
+        context.setKeyId("   ");
+        context.setMerchantId(UUID.randomUUID());
+
+        assertTrue(new AuditorAwareImpl(context).getCurrentAuditor()
+                .orElseThrow().startsWith("merchant_id: "));
+    }
+
+    @Test
+    void contextFailureFallsBackToSystem() {
+        MerchantContext context = org.mockito.Mockito.mock(MerchantContext.class);
+        org.mockito.Mockito.when(context.getKeyId())
+                .thenThrow(new IllegalStateException("no request scope"));
+
+        assertEquals("SYSTEM", new AuditorAwareImpl(context).getCurrentAuditor().orElseThrow());
     }
 }

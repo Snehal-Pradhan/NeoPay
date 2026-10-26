@@ -59,6 +59,12 @@ jobs:
       - name: Verify ${{ matrix.module }}
         run: mvn -B -f ${{ matrix.module }}/pom.xml verify
 
+      - name: Generate SBOM
+        run: |
+          mvn -B -q -f ${{ matrix.module }}/pom.xml \
+            org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DoutputFormat=json
+          test -s ${{ matrix.module }}/target/bom.json
+
       - name: Layered coverage gate
         if: contains(fromJSON('["common-lib","merchant-service","payment-service","vault-service","operations-service","api-gateway-service"]'), matrix.module)
         run: python3 scripts/coverage-gate.py ${{ matrix.module }}
@@ -71,6 +77,7 @@ jobs:
           path: |
             ${{ matrix.module }}/target/surefire-reports/
             ${{ matrix.module }}/target/site/jacoco/
+            ${{ matrix.module }}/target/bom.json
           retention-days: 7
           if-no-files-found: ignore
 
