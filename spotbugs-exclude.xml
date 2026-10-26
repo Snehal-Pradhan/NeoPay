@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+      Spring-managed singletons receive collaborators by constructor injection and
+      hold them for the bean lifetime. JPA entities hold managed associations.
+      Defensive copies of these references are neither feasible nor desirable:
+      Spring proxies and Hibernate persistence context require identity.
+      All remaining SpotBugs categories stay enabled.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>
