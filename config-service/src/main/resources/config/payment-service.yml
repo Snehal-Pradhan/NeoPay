@@ -31,11 +31,11 @@ resilience4j:
   retry:
     instances:
       merchant-service:
-        max-attempts: 3
-        wait-duration: 500ms
+        max-attempts: 5
+        wait-duration: 1s
       vault-service:
-        max-attempts: 2
-        wait-duration: 500ms
+        max-attempts: 5
+        wait-duration: 1s
 
 ---
 

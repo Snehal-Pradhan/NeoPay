@@ -36,6 +36,11 @@ for svc in MERCHANT-SERVICE PAYMENT-SERVICE VAULT-SERVICE OPERATIONS-SERVICE; do
   [ "$registered" = "1" ] || fail "$svc never registered with Eureka"
 done
 
+# Eureka answers before each client's load-balancer cache refreshes; give the
+# caches time so the first internal call does not race service discovery.
+say "0b. warming load-balancer caches"
+sleep "${LB_WARMUP_SECONDS:-35}"
+
 say "1. signup"
 SIGNUP=""
 for _ in $(seq 1 30); do
