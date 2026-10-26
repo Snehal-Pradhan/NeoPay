@@ -77,19 +77,31 @@ curl -sS -X POST "$BASE/v1/merchants/webhooks" \
   -d "{\"targetUrl\":\"http://localhost:$WEBHOOK_PORT/hook\",\"eventTypes\":\"ALL\"}" >/dev/null
 
 say "4. order"
-ORDER=$(curl -sS -X POST "$BASE/v1/orders" \
-  -H "Authorization: Basic $BASIC" \
-  -H 'Content-Type: application/json' \
-  -d '{"amount":{"amountUnits":5000,"currency":"INR"},"receipt":"e2e-'"$(date +%s)"'"}')
-ORDER_ID=$(echo "$ORDER" | json .id)
+ORDER=""
+ORDER_ID=""
+for _ in $(seq 1 20); do
+  ORDER=$(curl -sS -X POST "$BASE/v1/orders" \
+    -H "Authorization: Basic $BASIC" \
+    -H 'Content-Type: application/json' \
+    -d '{"amount":{"amountUnits":5000,"currency":"INR"},"receipt":"e2e-'"$(date +%s)"'"}')
+  ORDER_ID=$(echo "$ORDER" | jq -r '.id // empty' 2>/dev/null || true)
+  [ -n "$ORDER_ID" ] && break
+  sleep 2
+done
 [ -n "$ORDER_ID" ] && [ "$ORDER_ID" != "null" ] || fail "order: $ORDER"
 
 say "5. tokenize card"
-TOKENIZE=$(curl -sS -X POST "$BASE/v1/vault/tokenize" \
-  -H "Authorization: Basic $BASIC" \
-  -H 'Content-Type: application/json' \
-  -d '{"pan":"4111111111111111","cvv":"123","expiryMonth":12,"expiryYear":2030,"cardHolderName":"E2E User"}')
-VAULT_TOKEN=$(echo "$TOKENIZE" | json .token)
+TOKENIZE=""
+VAULT_TOKEN=""
+for _ in $(seq 1 20); do
+  TOKENIZE=$(curl -sS -X POST "$BASE/v1/vault/tokenize" \
+    -H "Authorization: Basic $BASIC" \
+    -H 'Content-Type: application/json' \
+    -d '{"pan":"4111111111111111","cvv":"123","expiryMonth":12,"expiryYear":2030,"cardHolderName":"E2E User"}')
+  VAULT_TOKEN=$(echo "$TOKENIZE" | jq -r '.token // empty' 2>/dev/null || true)
+  [ -n "$VAULT_TOKEN" ] && break
+  sleep 2
+done
 [ -n "$VAULT_TOKEN" ] && [ "$VAULT_TOKEN" != "null" ] || fail "tokenize: $TOKENIZE"
 
 say "6. initiate payment (idempotent)"
