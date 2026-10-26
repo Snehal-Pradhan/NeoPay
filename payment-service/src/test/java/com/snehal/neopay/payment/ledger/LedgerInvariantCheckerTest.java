@@ -61,4 +61,15 @@ class LedgerInvariantCheckerTest {
         assertFalse(result.healthy());
         assertEquals(List.of(transactionId), result.unbalancedTransactions());
     }
+
+    @Test
+    void scheduledCheckDelegatesToTheSameInvariantCheck() {
+        when(repository.totalDebits()).thenReturn(10L);
+        when(repository.totalCredits()).thenReturn(10L);
+        when(repository.findUnbalancedTransactions()).thenReturn(List.of());
+
+        checker.scheduledCheck();
+
+        assertTrue(checker.check().healthy());
+    }
 }

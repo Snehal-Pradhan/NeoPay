@@ -127,7 +127,7 @@
   },
   "payment-service": {
     "bundle": {
-      "line": 0.83,
+      "line": 0.85,
       "branch": 0.69
     },
     "mutation": {
@@ -178,8 +178,8 @@
           "strategy",
           "simulation"
         ],
-        "line": 0.771,
-        "branch": 0.62
+        "line": 0.8,
+        "branch": 0.63
       }
     }
   },
