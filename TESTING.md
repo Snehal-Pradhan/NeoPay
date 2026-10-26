@@ -125,6 +125,35 @@ mvn -f vault-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-b
 mvn -f payment-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
 ```
 
+`operations-service` (ratcheted 2026-10-26, never lowered):
+
+| Scope | Line | Branch | Mutation |
+|---|---:|---:|---:|
+| bundle | 88% | 83% | 71% (`mutation-baseline`) |
+| domain (`settlement`, `iso20022`, `entity`) | 83% | 74% | — |
+| application (`recon`, `payout`) | 87% | 81% | — |
+| api (`controller`) | 49% | — | — |
+| infrastructure (`webhook`, `outbox`) | 94% | 90% | — |
+
+`api-gateway-service` (ratcheted 2026-10-26, never lowered):
+
+| Scope | Line | Branch | Mutation |
+|---|---:|---:|---:|
+| bundle | 87% | 77% | 78% (`mutation-baseline`) |
+| security (`security`, `client`) | 87% | 77% | — |
+
+Identity headers (`X-Merchant-Id`, `X-Key-Id`, `X-Environment`, `X-User-Role`) are
+stripped from inbound requests by `HeaderAugmentingRequestWrapper` and can only be
+set by an authenticated gateway handler. `HeaderAugmentingRequestWrapperTest`
+covers this; do not relax it.
+
+Mutation commands:
+
+```bash
+mvn -f operations-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
+mvn -f api-gateway-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation-baseline
+```
+
 Tier targets: domain 90+, application 80+, API 70-80+, infrastructure 60+, with
 branch coverage tracked separately. A floor is raised when a service improves; it
 is never lowered to make a build pass.

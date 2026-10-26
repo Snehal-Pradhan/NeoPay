@@ -1,0 +1,12 @@
+package com.snehal.neopay.operations.repository;
+
+import com.snehal.neopay.common.enums.SettlementStatus;
+import com.snehal.neopay.operations.entity.Settlement;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface SettlementRepository extends JpaRepository<Settlement, UUID> {
+    List<Settlement> findByStatus(SettlementStatus settlementStatus);
+}

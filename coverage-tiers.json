@@ -182,5 +182,67 @@
         "branch": 0.62
       }
     }
+  },
+  "api-gateway-service": {
+    "bundle": {
+      "line": 0.87,
+      "branch": 0.77
+    },
+    "mutation": {
+      "mutation_baseline": 78
+    },
+    "layers": {
+      "security": {
+        "packages": [
+          "security",
+          "client"
+        ],
+        "line": 0.87,
+        "branch": 0.77
+      }
+    }
+  },
+  "operations-service": {
+    "bundle": {
+      "line": 0.88,
+      "branch": 0.83
+    },
+    "mutation": {
+      "mutation_baseline": 71
+    },
+    "layers": {
+      "domain": {
+        "packages": [
+          "settlement",
+          "iso20022",
+          "entity"
+        ],
+        "line": 0.836,
+        "branch": 0.745
+      },
+      "application": {
+        "packages": [
+          "recon",
+          "payout"
+        ],
+        "line": 0.878,
+        "branch": 0.819
+      },
+      "api": {
+        "packages": [
+          "controller"
+        ],
+        "line": 0.495,
+        "branch": 0
+      },
+      "infrastructure": {
+        "packages": [
+          "webhook",
+          "outbox"
+        ],
+        "line": 0.943,
+        "branch": 0.904
+      }
+    }
   }
 }
