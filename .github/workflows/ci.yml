@@ -91,12 +91,9 @@ jobs:
           ./kubeconform -strict -summary -ignore-missing-schemas /tmp/rendered.yaml
 
       - name: Trivy misconfiguration scan
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: config
-          scan-ref: k8s
-          severity: CRITICAL
-          exit-code: '1'
+        run: |
+          docker run --rm -v "$PWD:/src" aquasecurity/trivy:0.57.1 \
+            config --severity CRITICAL --exit-code 1 /src/k8s
 
   images:
     name: image / ${{ matrix.module }}
@@ -121,6 +118,9 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+
+      - name: Install common-lib
+        run: mvn -B -q -f common-lib/pom.xml -DskipTests install
 
       - name: Build container image
         run: |
