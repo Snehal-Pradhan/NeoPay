@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+app:
+  security:
+    public-routes:
+      - "/v1/auth/**"
+  rate-limit:
+    method: fixed
+
+jwt:
+  secret-key: test-secret-key-at-least-32-bytes-long-123456
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+MERCHANT_SERVICE_URI: http://localhost:9010
+PAYMENT_SERVICE_URI: http://localhost:9020
+VAULT_SERVICE_URI: http://localhost:9040
+OPERATIONS_SERVICE_URI: http://localhost:9030
