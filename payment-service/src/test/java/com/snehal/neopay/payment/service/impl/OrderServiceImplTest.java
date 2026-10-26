@@ -106,9 +106,10 @@ class OrderServiceImplTest {
         when(orderRepository.findByIdAndMerchantId(order.getId(), merchantId))
                 .thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
-        when(orderMapper.toResponse(order)).thenReturn(mock(OrderResponse.class));
+        OrderResponse mapped = mock(OrderResponse.class);
+        when(orderMapper.toResponse(order)).thenReturn(mapped);
 
-        service.cancel(MerchantId.of(merchantId), OrderId.of(order.getId()));
+        assertEquals(mapped, service.cancel(MerchantId.of(merchantId), OrderId.of(order.getId())));
 
         assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
         verify(publisher).publish(any(), eq(order.getId()), eq("ORDER_CANCELLED"), any());
@@ -148,9 +149,15 @@ class OrderServiceImplTest {
         OrderRecord order = order("r-7", OrderStatus.CREATED);
         when(orderRepository.findByIdAndMerchantId(order.getId(), merchantId))
                 .thenReturn(Optional.of(order));
-        when(paymentRepository.findByOrder_Id(order)).thenReturn(java.util.List.of());
+        com.snehal.neopay.payment.entity.Payment payment =
+                mock(com.snehal.neopay.payment.entity.Payment.class);
+        when(paymentRepository.findByOrder_Id(order)).thenReturn(java.util.List.of(payment));
+        java.util.List<com.snehal.neopay.payment.dto.response.PaymentResponse> mapped =
+                java.util.List.of(mock(com.snehal.neopay.payment.dto.response.PaymentResponse.class));
+        when(paymentMapper.toResponseList(java.util.List.of(payment))).thenReturn(mapped);
 
-        assertNotNull(service.listPayments(MerchantId.of(merchantId), OrderId.of(order.getId())));
+        assertEquals(mapped,
+                service.listPayments(MerchantId.of(merchantId), OrderId.of(order.getId())));
     }
 
     @Test

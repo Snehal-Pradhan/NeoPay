@@ -132,7 +132,7 @@ mvn -f merchant-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutatio
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
-| bundle | 84% | 69% | 75% (`mutation-baseline`) |
+| bundle | 84% | 69% | 90% (`mutation-baseline`, Testcontainers excluded) |
 | domain (`statemachine`, `ledger`, `domain`) | 90% | 79% | — |
 | application (`service`, `impl`, `saga`, `dispute`, `fx`, `risk`) | 87% | 70% | — |
 | api (`controller`, `api`) | 99% | — | — |
@@ -149,7 +149,7 @@ mvn -f payment-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
-| bundle | 91% | 83% | 71% (`mutation-baseline`) |
+| bundle | 91% | 83% | 80% (`mutation-baseline`) |
 | domain (`settlement`, `iso20022`, `entity`) | 83% | 74% | — |
 | application (`recon`, `payout`) | 95% | 81% | — |
 | infrastructure (`webhook`, `outbox`) | 94% | 90% | — |

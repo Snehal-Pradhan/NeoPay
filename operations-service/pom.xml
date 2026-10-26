@@ -348,7 +348,7 @@
 								<param>*Application</param>
 								<param>*Config</param>
 							</excludedClasses>
-							<mutationThreshold>71</mutationThreshold>
+							<mutationThreshold>80</mutationThreshold>
 						</configuration>
 					</execution>
 				</executions>

@@ -131,7 +131,7 @@
       "branch": 0.69
     },
     "mutation": {
-      "mutation_baseline": 75
+      "mutation_baseline": 90
     },
     "layers": {
       "domain": {
@@ -208,7 +208,7 @@
       "branch": 0.83
     },
     "mutation": {
-      "mutation_baseline": 71
+      "mutation_baseline": 80
     },
     "layers": {
       "domain": {

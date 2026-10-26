@@ -1,13 +1,9 @@
 package com.snehal.neopay.payment.outbox;
 
-import com.snehal.neopay.common.enums.EventAggregateType;
 import com.snehal.neopay.common.enums.OutboxStatus;
 import com.snehal.neopay.payment.entity.OutboxEvent;
 import com.snehal.neopay.payment.repository.OutboxEventRepository;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,56 +16,53 @@ class OutboxResultHandlerTest {
     private final OutboxResultHandler handler = new OutboxResultHandler(repository);
 
     @Test
-    void publishedMarksStatusAndTimestamp() {
-        OutboxEvent event = event(0);
+    void thirdFailureMarksTheEventFailed() {
+        OutboxEvent event = OutboxEvent.builder().attempts(2).status(OutboxStatus.PENDING).build();
+
+        handler.handleEventFailed(event, "kafka down");
+
+        assertEquals(3, event.getAttempts());
+        assertEquals(OutboxStatus.FAILED, event.getStatus());
+        assertEquals("kafka down", event.getLastError());
+        verify(repository).save(event);
+    }
+
+    @Test
+    void firstFailureKeepsTheEventPending() {
+        OutboxEvent event = OutboxEvent.builder().attempts(0).status(OutboxStatus.PENDING).build();
+
+        handler.handleEventFailed(event, "timeout");
+
+        assertEquals(1, event.getAttempts());
+        assertEquals(OutboxStatus.PENDING, event.getStatus());
+    }
+
+    @Test
+    void blankErrorBecomesUnknown() {
+        OutboxEvent event = OutboxEvent.builder().attempts(0).status(OutboxStatus.PENDING).build();
+
+        handler.handleEventFailed(event, "  ");
+
+        assertEquals("unknown error", event.getLastError());
+    }
+
+    @Test
+    void longErrorIsTruncated() {
+        OutboxEvent event = OutboxEvent.builder().attempts(0).status(OutboxStatus.PENDING).build();
+
+        handler.handleEventFailed(event, "x".repeat(1_500));
+
+        assertEquals(1_000, event.getLastError().length());
+    }
+
+    @Test
+    void publishedEventIsStampedAndSaved() {
+        OutboxEvent event = OutboxEvent.builder().status(OutboxStatus.PENDING).build();
 
         handler.handleEventPublished(event);
 
         assertEquals(OutboxStatus.PUBLISHED, event.getStatus());
         assertNotNull(event.getPublishedAt());
         verify(repository).save(event);
-    }
-
-    @Test
-    void failureIncrementsAttemptsAndTruncatesError() {
-        OutboxEvent event = event(0);
-
-        handler.handleEventFailed(event, "x".repeat(1200));
-
-        assertEquals(1, event.getAttempts());
-        assertEquals(1000, event.getLastError().length());
-        assertEquals(OutboxStatus.PENDING, event.getStatus());
-    }
-
-    @Test
-    void failureAtMaxAttemptsMarksFailed() {
-        OutboxEvent event = event(2);
-
-        handler.handleEventFailed(event, "boom");
-
-        assertEquals(3, event.getAttempts());
-        assertEquals(OutboxStatus.FAILED, event.getStatus());
-    }
-
-    private static OutboxEvent event(int attempts) {
-        return OutboxEvent.builder()
-                .id(UUID.randomUUID())
-                .aggregateType(EventAggregateType.PAYMENT)
-                .aggregateId(UUID.randomUUID())
-                .eventType("PAYMENT_CREATED")
-                .payload(Map.of("merchantId", "m"))
-                .status(OutboxStatus.PENDING)
-                .attempts(attempts)
-                .build();
-    }
-
-    @Test
-    void nullErrorMessageIsRecordedAsUnknownInsteadOfFailing() {
-        OutboxEvent event = event(0);
-
-        handler.handleEventFailed(event, null);
-
-        assertEquals(1, event.getAttempts());
-        assertEquals("unknown error", event.getLastError());
     }
 }

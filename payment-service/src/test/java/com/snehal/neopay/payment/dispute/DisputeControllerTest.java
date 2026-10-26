@@ -1,0 +1,67 @@
+package com.snehal.neopay.payment.dispute;
+
+import com.snehal.neopay.common.context.MerchantContext;
+import com.snehal.neopay.common.entity.Money;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class DisputeControllerTest {
+
+    private final DisputeService service = mock(DisputeService.class);
+    private final MerchantContext context = new MerchantContext();
+    private final DisputeController controller = new DisputeController(service, context);
+
+    @Test
+    void openMapsTheCreatedDispute() {
+        UUID merchantId = UUID.randomUUID();
+        UUID paymentId = UUID.randomUUID();
+        UUID disputeId = UUID.randomUUID();
+        context.setMerchantId(merchantId);
+        Dispute dispute = Dispute.builder()
+                .id(disputeId)
+                .paymentId(paymentId)
+                .merchantId(merchantId)
+                .amount(Money.inr(250))
+                .status(DisputeStatus.OPENED)
+                .reason("fraud")
+                .openedAt(LocalDateTime.now())
+                .build();
+        CreateDisputeRequest request = new CreateDisputeRequest(Money.inr(250), "fraud");
+        when(service.open(merchantId, paymentId, request)).thenReturn(dispute);
+
+        DisputeController.DisputeResponse response = controller.open(paymentId, request);
+
+        assertEquals(disputeId, response.id());
+        assertEquals("OPENED", response.status());
+        assertEquals("fraud", response.reason());
+    }
+
+    @Test
+    void listMapsEveryDispute() {
+        UUID merchantId = UUID.randomUUID();
+        UUID paymentId = UUID.randomUUID();
+        context.setMerchantId(merchantId);
+        Dispute dispute = Dispute.builder()
+                .id(UUID.randomUUID())
+                .paymentId(paymentId)
+                .merchantId(merchantId)
+                .amount(Money.inr(100))
+                .status(DisputeStatus.WON)
+                .openedAt(LocalDateTime.now())
+                .resolvedAt(LocalDateTime.now())
+                .build();
+        when(service.list(merchantId, paymentId)).thenReturn(List.of(dispute));
+
+        List<DisputeController.DisputeResponse> responses = controller.list(paymentId);
+
+        assertEquals(1, responses.size());
+        assertEquals("WON", responses.getFirst().status());
+    }
+}

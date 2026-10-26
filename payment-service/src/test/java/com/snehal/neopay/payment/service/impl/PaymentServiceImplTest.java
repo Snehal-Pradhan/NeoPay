@@ -67,6 +67,7 @@ class PaymentServiceImplTest {
         assertSame(existing, result);
         verify(recorder, never()).recordPayment(any(), any(), any());
         verify(gatewayRouter, never()).initiate(any());
+        verify(metrics).idempotencyReplay();
     }
 
     @Test
@@ -176,6 +177,7 @@ class PaymentServiceImplTest {
         assertNotNull(payment.getCapturedAt());
         verify(transitionService).apply(payment, com.snehal.neopay.common.enums.PaymentEvent.CAPTURE_SUCCESS);
         verify(eventPublisher).publish(any(), eq(paymentId), eq("PAYMENT_STATUS_CHANGED"), any());
+        verify(metrics).paymentCaptured("UPI");
     }
 
     @Test

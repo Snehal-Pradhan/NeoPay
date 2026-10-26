@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -186,5 +187,25 @@ class RefundServiceImplTest {
                 .status(status)
                 .method(com.snehal.neopay.common.enums.PaymentMethod.UPI)
                 .build();
+    }
+
+    @Test
+    void listMapsEveryRefund() {
+        Payment paymentRef = Payment.builder().id(UUID.randomUUID()).build();
+        Refund refund = Refund.builder()
+                .id(UUID.randomUUID())
+                .payment(paymentRef)
+                .merchantId(MERCHANT)
+                .amount(Money.inr(200))
+                .status(RefundStatus.PROCESSED)
+                .build();
+        when(refundRepository.findByPayment_IdAndMerchantIdOrderByCreatedAtAsc(
+                paymentRef.getId(), MERCHANT)).thenReturn(List.of(refund));
+
+        List<RefundResponse> result = service.list(MerchantId.of(MERCHANT),
+                PaymentId.of(paymentRef.getId()));
+
+        assertEquals(1, result.size());
+        assertEquals(200, result.getFirst().amount().getAmountUnits());
     }
 }
