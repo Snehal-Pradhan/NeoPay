@@ -1,0 +1,38 @@
+language: en-US
+
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  path_filters:
+    - '!**/target/**'
+    - '!**/.run/**'
+    - '!**/*.log'
+    - '!**/*.md'
+
+  path_instructions:
+    - path: '**/*.java'
+      instructions: |
+        This is a payments platform. Review with these priorities:
+        1. Money correctness: no floating point in money paths, integer minor units,
+           explicit rounding, overflow safety.
+        2. Idempotency: every money write must be replay-safe; concurrent duplicates
+           must not create a second row.
+        3. Transactions: writes that must be atomic stay in one transaction; no
+           remote calls inside a transaction except the documented saga boundaries.
+        4. Ledger: every posting is balanced; no update or delete path on ledger rows.
+        5. State machine: illegal transitions must be rejected, not silently ignored.
+        6. Security: no PAN or secret in logs, no credentials in code.
+        7. Tests: flag behaviour changes without a test.
+    - path: '**/src/test/**'
+      instructions: |
+        Check that tests assert behaviour rather than mere execution. Flag assertions
+        that cannot fail, missing edge cases, and tests that would pass with the
+        implementation broken.
+
+chat:
+  auto_reply: true

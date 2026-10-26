@@ -1,0 +1,93 @@
+{
+  "common-lib": {
+    "bundle": {
+      "line": 0.84,
+      "branch": 0.78
+    },
+    "mutation": {
+      "full_baseline": 76,
+      "critical_gate": 80
+    },
+    "layers": {
+      "domain": {
+        "packages": [
+          "entity",
+          "money",
+          "ratelimit",
+          "iso20022"
+        ],
+        "line": 0.91,
+        "branch": 0.82
+      },
+      "application": {
+        "packages": [
+          "idempotency"
+        ],
+        "line": 0.82,
+        "branch": 0.83
+      },
+      "api": {
+        "packages": [
+          "web",
+          "exception"
+        ],
+        "line": 0.83,
+        "branch": 0.85
+      },
+      "infrastructure": {
+        "packages": [
+          "audit",
+          "cache",
+          "context",
+          "util",
+          "domain"
+        ],
+        "line": 0.55,
+        "branch": 0.38
+      }
+    }
+  },
+  "merchant-service": {
+    "bundle": {
+      "line": 0.99,
+      "branch": 0.97
+    },
+    "mutation": {
+      "mutation_baseline": 99
+    },
+    "layers": {
+      "domain": {
+        "packages": [
+          "entity"
+        ],
+        "line": 0.99,
+        "branch": 0.99
+      },
+      "application": {
+        "packages": [
+          "service",
+          "impl",
+          "risk"
+        ],
+        "line": 0.99,
+        "branch": 0.96
+      },
+      "api": {
+        "packages": [
+          "controller",
+          "api"
+        ],
+        "line": 0.99,
+        "branch": 0.0
+      },
+      "infrastructure": {
+        "packages": [
+          "security",
+          "repository"
+        ],
+        "line": 0.99,
+        "branch": 0.0
+      }
+    }
+  }
+}

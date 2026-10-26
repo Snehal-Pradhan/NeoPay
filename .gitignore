@@ -1,0 +1,10 @@
+target/
+**/target/
+.run/
+*.log
+.DS_Store
+.idea/
+*.iml
+.agents/
+*.class
+.opencode/
