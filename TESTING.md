@@ -147,6 +147,11 @@ stripped from inbound requests by `HeaderAugmentingRequestWrapper` and can only 
 set by an authenticated gateway handler. `HeaderAugmentingRequestWrapperTest`
 covers this; do not relax it.
 
+`discovery-service` and `config-service` contain one application class each and no
+unit-testable logic. Their single `@SpringBootTest contextLoads` case is the intended
+coverage; no coverage gate is configured, because a threshold there would only
+measure Spring's own wiring.
+
 Mutation commands:
 
 ```bash
