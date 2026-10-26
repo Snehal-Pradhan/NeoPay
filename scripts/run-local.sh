@@ -17,6 +17,9 @@ export EUREKA_URL="${EUREKA_URL:-http://localhost:8761/eureka/}"
 # Simulators are opt-in; local and CI stacks need them to settle the flow.
 export PAYMENT_SIMULATOR_ENABLED="${PAYMENT_SIMULATOR_ENABLED:-true}"
 export OPERATIONS_SETTLEMENT_SIMULATOR_ENABLED="${OPERATIONS_SETTLEMENT_SIMULATOR_ENABLED:-true}"
+# Deterministic approvals: the NORMAL mode declines a share of payments by hash,
+# which makes an end-to-end run flaky for no useful reason.
+export PAYMENT_SIMULATOR_CHAOS_MODE="${PAYMENT_SIMULATOR_CHAOS_MODE:-SUCCESS}"
 
 mkdir -p .run/logs
 
@@ -37,5 +40,26 @@ start vault-service vault-service/target/vault-service-0.0.1-SNAPSHOT.jar
 start operations-service operations-service/target/operations-service-0.0.1-SNAPSHOT.jar
 sleep 12
 start api-gateway-service api-gateway-service/target/api-gateway-service-0.0.1-SNAPSHOT.jar
+
+wait_health() {
+  local name="$1" port="$2"
+  for _ in $(seq 1 60); do
+    if curl -fsS "http://localhost:$port/actuator/health" >/dev/null 2>&1; then
+      echo "$name healthy on $port"
+      return 0
+    fi
+    sleep 2
+  done
+  echo "$name FAILED to become healthy on $port; see .run/logs/$name.log" >&2
+  return 1
+}
+
+wait_health discovery-service 8761
+wait_health config-service 8888
+wait_health merchant-service 9010 || exit 1
+wait_health payment-service 9020 || exit 1
+wait_health vault-service 9040 || exit 1
+wait_health operations-service 9030 || exit 1
+wait_health api-gateway-service 8080 || exit 1
 
 echo "started; logs in .run/logs; gateway on http://localhost:8080"
