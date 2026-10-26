@@ -1,0 +1,31 @@
+server:
+  port: 9040
+
+spring:
+  datasource:
+    url: ${VAULT_DB_URL:jdbc:postgresql://localhost:5432/neopay-vault-db}
+
+vault:
+  master-key: ${VAULT_MASTER_KEY:5hnhonOrsz9METLPM4C6sxdVuC0+IPy1c3WghMMqfuE=}
+
+resilience4j:
+  thread-pool-bulkhead:
+    instances:
+      vault-card-processor:
+        core-thread-pool-size: 5
+        max-thread-pool-size: 10
+        queue-capacity: 20
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  datasource:
+    url: jdbc:postgresql://postgres.neopay-core.svc.cluster.local:5432/neopay-vault-db
+    username: vault_user
+    password: ${VAULT_DB_PASSWORD}
+
+vault:
+  master-key: ${VAULT_MASTER_KEY}

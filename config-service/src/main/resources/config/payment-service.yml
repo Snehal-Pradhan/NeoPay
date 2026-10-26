@@ -1,0 +1,49 @@
+server:
+  port: 9020
+
+spring:
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:postgresql://localhost:5432/neopay-payment-db}
+  cloud:
+    openfeign:
+      client:
+        config:
+          merchant-service:
+            connectTimeout: 2000
+            readTimeout: 3000
+          vault-service:
+            connectTimeout: 2000
+            readTimeout: 5000
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      merchant-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+      vault-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+  retry:
+    instances:
+      merchant-service:
+        max-attempts: 3
+        wait-duration: 500ms
+      vault-service:
+        max-attempts: 2
+        wait-duration: 500ms
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  datasource:
+    url: jdbc:postgresql://postgres.neopay-core.svc.cluster.local:5432/neopay-payment-db
+    username: payment_user
+    password: ${PAYMENT_DB_PASSWORD}

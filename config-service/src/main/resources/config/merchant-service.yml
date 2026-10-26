@@ -1,0 +1,29 @@
+server:
+  port: 9010
+
+spring:
+  datasource:
+    url: ${MERCHANT_DB_URL:jdbc:postgresql://localhost:5432/neopay-merchant-db}
+
+jwt:
+  secret-key: ${JWT_SECRET:cpY8wNotFJAUlUhd2NpJrXmviYlANykc5xljWSBJjJMjT7pR/Ils9DoNm0BIZLMd}
+
+webhook:
+  secret-encryption-key: ${WEBHOOK_SECRET_ENCRYPTION_KEY:j66s+yPHRWFtCMBtzfqR5/sH6dBIyXcaGivTiSwktjg=}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  datasource:
+    url: jdbc:postgresql://postgres.neopay-core.svc.cluster.local:5432/neopay-merchant-db
+    username: merchant_user
+    password: ${MERCHANT_DB_PASSWORD}
+
+jwt:
+  secret-key: ${JWT_SECRET}
+
+webhook:
+  secret-encryption-key: ${WEBHOOK_SECRET_ENCRYPTION_KEY}

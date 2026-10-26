@@ -66,4 +66,14 @@ class ReserveReleaseServiceTest {
         assertEquals(0, service.releaseDue());
         verify(ledgerService, never()).postPair(any(), any(), any(), any(), any());
     }
+
+    @Test
+    void scheduledReleaseDelegatesToTheTransactionalRelease() {
+        when(ledgerLineRepository.findReleasableReserveLines(eq(LedgerAccount.MERCHANT_RESERVE), any()))
+                .thenReturn(List.of());
+
+        service.scheduledRelease();
+
+        verify(ledgerLineRepository).findReleasableReserveLines(eq(LedgerAccount.MERCHANT_RESERVE), any());
+    }
 }

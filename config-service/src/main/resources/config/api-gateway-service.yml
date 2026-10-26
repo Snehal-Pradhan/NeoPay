@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+app:
+  security:
+    trust-inbound-headers: false
+    public-routes:
+      - "/v1/auth/**"
+      - "/webhook/**"
+      - "/actuator/**"
+
+  rate-limit:
+    method: fixed
+    use-case:
+      api-key:
+        requests-per-minute: 200
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: merchant-service
+              uri: ${MERCHANT_SERVICE_URI:lb://merchant-service}
+              predicates:
+                - Path=/v1/auth/**, /v1/merchants/**
+            - id: payment-service
+              uri: ${PAYMENT_SERVICE_URI:lb://payment-service}
+              predicates:
+                - Path=/v1/orders/**, /v1/payments/**
+            - id: vault-service
+              uri: ${VAULT_SERVICE_URI:lb://vault-service}
+              predicates:
+                - Path=/v1/vault/**
+            - id: operations-service
+              uri: ${OPERATIONS_SERVICE_URI:lb://operations-service}
+              predicates:
+                - Path=/webhook/**
+
+jwt:
+  secret-key: ${JWT_SECRET:cpY8wNotFJAUlUhd2NpJrXmviYlANykc5xljWSBJjJMjT7pR/Ils9DoNm0BIZLMd}
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+
+jwt:
+  secret-key: ${JWT_SECRET}
