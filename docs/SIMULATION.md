@@ -115,3 +115,16 @@ The process exits non-zero when any violation is recorded.
 
 Drive the simulator through `PaymentServiceImpl` against an in-memory or containerized
 database, so persistence and transaction boundaries are exercised as well as the rules.
+
+## External PSP boundary
+
+The simulator is the default processor. To prove the boundary is not simulator-shaped,
+`payment-service` also contains `StripeSandboxProcessor`: it calls the PaymentIntents
+API shape (`POST /v1/payment_intents`), sends the payment id as `Idempotency-Key`, and
+maps `succeeded`, `requires_action`, card declines (`decline_code`) and idempotency
+conflicts to the internal `PaymentProcessorResponse` types. `StripeSandboxProcessorContractTest`
+runs those five contracts against WireMock, so the mapping is verified without a live
+Stripe account or any money movement.
+
+The adapter is not in the default routing table. Enabling it is a configuration change
+(base URL and test key) plus a router entry, not a code change in the domain layer.

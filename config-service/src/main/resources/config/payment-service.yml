@@ -47,3 +47,10 @@ spring:
     url: jdbc:postgresql://postgres.neopay-core.svc.cluster.local:5432/neopay-payment-db
     username: payment_user
     password: ${PAYMENT_DB_PASSWORD}
+
+# Sandbox PSP adapter. Default routing still uses the in-process simulators; add
+# this adapter to a processor route only after providing a test key and base URL.
+stripe:
+  sandbox:
+    base-url: ${STRIPE_SANDBOX_BASE_URL:https://api.stripe.com}
+    api-key: ${STRIPE_SANDBOX_API_KEY:}
