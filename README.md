@@ -254,6 +254,7 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 
 | Document | Contents |
 |---|---|
+| `docs/index.md` | Master index: architecture, data, services, patterns, operations |
 | `docs/API.md` | Versioning, RFC 9457 errors, pagination, idempotency |
 | `docs/DESIGN.md` | Invariants, consistency model, failure modes, weak points |
 | `docs/SIMULATION.md` | Deterministic 10M-transaction simulation and results |
