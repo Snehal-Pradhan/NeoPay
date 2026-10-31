@@ -1,0 +1,11 @@
+{
+  "target": "postgres",
+  "outageSeconds": 20,
+  "recoverySeconds": 28,
+  "duplicateCaptureGroups": "0",
+  "pendingOutboxEvents": "155",
+  "ledgerDebitCreditDelta": "0",
+  "k6Log": "perf/chaos-k6-postgres.log",
+  "outboxDrainedSeconds": 30,
+  "duplicateCaptures": 0
+}

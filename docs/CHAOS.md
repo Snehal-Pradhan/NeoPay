@@ -38,7 +38,33 @@ would otherwise flatter the number.
 | Kafka down during publish | outbox row stays `PENDING`; no event loss; the poller drains after restart |
 | Kafka down during webhook ingest | the webhook row commits; the outbox event is deferred, not dropped |
 
-## Status
+## Measured — 2026-10-31, local Docker stack
 
-Harness committed. Numbers are recorded in `perf/chaos-<target>.json` when the run executes;
-this document does not claim measurements it has not produced.
+Machine: Apple silicon, Docker Desktop, single broker, single Postgres, seven JVM services,
+Jib images not used (jars run directly). Load: 15 flows/s for 90 s, 20 s outage.
+
+| Target | Outage | Recovery to successful order | Duplicate capture groups | Ledger debit−credit | Outbox drain after restart |
+|---|---:|---:|---:|---:|---:|
+| Postgres | 20 s | **28 s** | 0 | 0 | 155 → 0 within 30 s |
+| Kafka | 20 s | **24 s** | 0 | 0 | 476 → 0 within 20 s |
+
+Recovery is measured to the first successful `POST /v1/orders`, not to a health 200. The
+outbox counts are the `PENDING` rows at the moment k6 ended; both drained to zero without
+operator action.
+
+Raw evidence: `perf/chaos-postgres.json`, `perf/chaos-kafka.json`, `perf/chaos-k6-*.log`.
+
+## What the numbers mean
+
+| Observation | Interpretation |
+|---|---|
+| 0 duplicate groups | the unique idempotency index survives a datasource outage |
+| ledger delta 0 | no partial posting; the capture transaction is atomic |
+| outbox drains unattended | the poller resumes and replays; no event loss |
+| 24–28 s RTO | dominated by Postgres/broker restart, not by application backoff |
+
+## Limits
+
+- Single-node dependencies. A managed multi-AZ database has a different failure profile.
+- No disk or network partition test, only process stop and start.
+- 15 flows/s is not saturation; recovery under peak load is not measured here.

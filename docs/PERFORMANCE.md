@@ -141,3 +141,36 @@ A committed flame graph is still outstanding.
 - Gateway is mocked; the real card path adds a Feign call and vault decryption.
 - No sustained soak; 300 sequential samples, not concurrent load.
 - No JVM warmup beyond 50 iterations.
+
+## Soak — sustained arrival rate
+
+Two runs against the local stack (7 JVM services, single Postgres, single Kafka, 60 TEST
+keys, ramp 2 min, hold, ramp-down 2 min). Machine: Apple silicon, Docker Desktop.
+
+| Run | Peak flow rate | Duration | Iterations | Achieved | http_req_failed | p95 overall | p95 order | p95 payment |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| A | 90/s | 14 min | 62,630 | 74.6/s | 0.53% | 598 ms | 666 ms | 517 ms |
+| B | 60/s | 10 min | 28,872 | 48.3/s | 0.11% | 327 ms | 416 ms | 268 ms |
+
+Run A crossed the p99 thresholds and produced 653 order failures. Run B, with failure bodies
+logged, identified all 69 failures as `429 RATE_LIMIT_EXCEEDED`.
+
+Root cause: the gateway rate limiter is a fixed 60-second window of 200 requests per API key.
+At 60 keys and 60 flows/s the average is 120 requests/min/key, inside the limit, but bursts
+inside one window exceed 200. The limiter is a product control, not a defect, so the soak is
+reported at a rate it admits.
+
+Practical ceiling on this machine with 60 keys: **40–48 flows/s sustained**. Above that the
+limiter, not the services, is the bottleneck.
+
+Reproduce:
+
+```bash
+export AUTH_POOL=$(./perf/provision-keys.sh 60)
+docker run --rm -i --add-host=host.docker.internal:host-gateway \
+  -e BASE_URL=http://host.docker.internal:8080 -e AUTH_POOL="$AUTH_POOL" \
+  -e PEAK_RATE=60 -e HOLD=6m grafana/k6:0.54.0 run - < perf/k6-soak.js
+```
+
+Limits: no multi-node cluster, no managed database, no TLS termination, and the load
+generator shares the machine with the services.

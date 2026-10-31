@@ -1,0 +1,119 @@
+==================================================================
+-- settlement candidate scan: captured payments for one merchant
+==================================================================
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=3932.57..3935.24 rows=1070 width=32) (actual time=122.302..122.345 rows=1121 loops=1)
+   Sort Key: captured_at
+   Sort Method: quicksort  Memory: 110kB
+   Buffers: shared hit=9 read=1881 written=1792
+   ->  Bitmap Heap Scan on payment  (cost=28.81..3878.73 rows=1070 width=32) (actual time=0.571..121.707 rows=1121 loops=1)
+         Recheck Cond: (merchant_id = '9cf05f4d-e982-4f34-b796-bf40e4e1ec32'::uuid)
+         Filter: ((settled_at IS NULL) AND ((status)::text = ANY ('{CAPTURED,PARTIALLY_REFUNDED}'::text[])))
+         Rows Removed by Filter: 523
+         Heap Blocks: exact=1883
+         Buffers: shared hit=6 read=1881 written=1792
+         ->  Bitmap Index Scan on idx_payment_merchant_id  (cost=0.00..28.55 rows=1634 width=0) (actual time=0.405..0.406 rows=2585 loops=1)
+               Index Cond: (merchant_id = '9cf05f4d-e982-4f34-b796-bf40e4e1ec32'::uuid)
+               Buffers: shared hit=1 read=3
+ Planning:
+   Buffers: shared hit=288
+ Planning Time: 1.300 ms
+ Execution Time: 122.498 ms
+(17 rows)
+
+
+==================================================================
+-- ledger replay check by transaction and credit account
+==================================================================
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Index Only Scan using ux_ledger_line_txn_account on ledger_line  (cost=0.55..8.57 rows=1 width=4) (actual time=0.068..0.069 rows=1 loops=1)
+   Index Cond: ((transaction_id = '662cc653-a640-4278-b916-e6e034982341'::uuid) AND (account = 'MERCHANT_PAYABLE'::text))
+   Heap Fetches: 0
+   Buffers: shared hit=4 read=1 written=1
+ Planning:
+   Buffers: shared hit=145
+ Planning Time: 0.618 ms
+ Execution Time: 0.100 ms
+(8 rows)
+
+
+==================================================================
+-- ledger balance aggregate (invariant checker)
+==================================================================
+                                                                    QUERY PLAN                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=156242.54..156242.55 rows=1 width=64) (actual time=1261.736..1269.302 rows=1 loops=1)
+   Buffers: shared hit=188 read=147710 dirtied=6 written=505
+   ->  Gather  (cost=156242.31..156242.52 rows=2 width=64) (actual time=1260.624..1269.171 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=188 read=147710 dirtied=6 written=505
+         ->  Partial Aggregate  (cost=155242.31..155242.32 rows=1 width=64) (actual time=1230.673..1230.675 rows=1 loops=3)
+               Buffers: shared hit=188 read=147710 dirtied=6 written=505
+               ->  Parallel Seq Scan on ledger_line  (cost=0.00..152794.20 rows=489620 width=16) (actual time=0.033..1176.405 rows=374784 loops=3)
+                     Buffers: shared hit=188 read=147710 dirtied=6 written=505
+ Planning:
+   Buffers: shared hit=141 read=4
+ Planning Time: 0.739 ms
+ JIT:
+   Functions: 11
+   Options: Inlining false, Optimization false, Expressions true, Deforming true
+   Timing: Generation 1.875 ms, Inlining 0.000 ms, Optimization 2.851 ms, Emission 49.909 ms, Total 54.635 ms
+ Execution Time: 1332.255 ms
+(18 rows)
+
+
+==================================================================
+-- unbalanced transaction detection
+==================================================================
+                                                                         QUERY PLAN                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.43..11.03 rows=10 width=16) (actual time=0.651..2.189 rows=10 loops=1)
+   Buffers: shared hit=2 read=84 written=70
+   ->  GroupAggregate  (cost=0.43..803928.51 rows=757913 width=16) (actual time=0.650..2.186 rows=10 loops=1)
+         Group Key: transaction_id
+         Filter: (sum(debit_units) <> sum(credit_units))
+         Buffers: shared hit=2 read=84 written=70
+         ->  Index Scan using idx_ledger_transaction on ledger_line  (cost=0.43..781784.07 rows=1175240 width=32) (actual time=0.253..2.164 rows=11 loops=1)
+               Buffers: shared hit=2 read=84 written=70
+ Planning:
+   Buffers: shared hit=175
+ Planning Time: 1.014 ms
+ Execution Time: 2.280 ms
+(12 rows)
+
+
+==================================================================
+-- webhook replay lookup
+==================================================================
+                                                                QUERY PLAN                                                                
+------------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using uq_webhook_provider_event on webhook_event  (cost=0.14..8.16 rows=1 width=16) (actual time=0.004..0.005 rows=0 loops=1)
+   Index Cond: (((provider)::text = 'STRIPE'::text) AND ((external_event_id)::text = 'evt_missing'::text))
+   Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=112 read=3
+ Planning Time: 0.647 ms
+ Execution Time: 0.028 ms
+(7 rows)
+
+
+==================================================================
+-- outbox backlog scan
+==================================================================
+                                                                        QUERY PLAN                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.42..54.02 rows=100 width=24) (actual time=0.287..0.750 rows=100 loops=1)
+   Buffers: shared hit=68 read=33 written=19
+   ->  Index Scan using idx_outbox_status_created on outbox_event  (cost=0.42..68116.78 rows=127093 width=24) (actual time=0.286..0.743 rows=100 loops=1)
+         Index Cond: ((status)::text = 'PENDING'::text)
+         Buffers: shared hit=68 read=33 written=19
+ Planning:
+   Buffers: shared hit=133
+ Planning Time: 0.644 ms
+ Execution Time: 0.786 ms
+(9 rows)
+
+

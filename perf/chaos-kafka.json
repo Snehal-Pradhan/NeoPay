@@ -1,0 +1,11 @@
+{
+  "target": "kafka",
+  "outageSeconds": 20,
+  "recoverySeconds": 24,
+  "duplicateCaptureGroups": "0",
+  "pendingOutboxEvents": "476",
+  "ledgerDebitCreditDelta": "0",
+  "k6Log": "perf/chaos-k6-kafka.log",
+  "outboxDrainedSeconds": 20,
+  "duplicateCaptures": 0
+}
