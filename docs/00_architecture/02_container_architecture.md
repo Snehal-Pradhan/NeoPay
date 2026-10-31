@@ -57,69 +57,47 @@ Related: [system context](01_system_context.md), [deployment](../04_operations/0
 ## Diagram script
 
 ```python
-from diagrams import Diagram, Cluster, Edge
-from diagrams.onprem.client import Users, Client
-from diagrams.onprem.network import Internet
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
+from diagrams.onprem.client import Users
 from diagrams.onprem.compute import Server
 from diagrams.onprem.database import PostgreSQL
 from diagrams.onprem.inmemory import Redis
+from diagrams.onprem.network import Internet
 from diagrams.onprem.queue import Kafka
-from diagrams.onprem.monitoring import Prometheus, Grafana
 
-with Diagram("NeoPay container architecture", show=False, direction="LR",
+G = dict(GRAPH_ATTR)
+G.update({"nodesep": "0.45", "ranksep": "0.9", "splines": "polyline"})
+
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
              filename="./docs/assets/00_container_architecture", outformat="png"):
-    users = Users("Merchants and customers")
-    psp = Internet("Card and UPI processor")
+    users = node(Users, "Merchants")
+    psp = node(Internet, "PSP")
+    gateway = node(Server, "gateway")
+    merchant = node(Server, "merchant")
+    payment = node(Server, "payment")
+    operations = node(Server, "operations")
+    vault = node(Server, "vault")
+    db = node(PostgreSQL, "Postgres")
+    cache = node(Redis, "Redis")
+    bus = node(Kafka, "Kafka")
 
-    with Cluster("Edge"):
-        gateway = Server("api-gateway\n:8080")
-        discovery = Server("discovery\n:8761")
-        config = Server("config\n:8888")
-
-    with Cluster("Core services"):
-        merchant = Server("merchant\n:9010")
-        payment = Server("payment\n:9020")
-        operations = Server("operations\n:9030")
-        vault = Server("vault\n:9040")
-
-    with Cluster("Data"):
-        pg = PostgreSQL("Postgres\none database per service")
-        cache = Redis("Redis\nrate limit, idempotency")
-        bus = Kafka("Kafka\ndomain events")
-
-    with Cluster("Observability"):
-        zipkin = Prometheus("Zipkin")
-        metrics = Grafana("Prometheus + Grafana")
-
-    users >> Edge(label="API key / JWT") >> gateway
-    gateway >> Edge(label="route") >> merchant
-    gateway >> Edge(label="route") >> payment
-    gateway >> Edge(label="route") >> operations
-    gateway >> Edge(label="route") >> vault
-    gateway >> Edge(label="public") >> psp
-
-    merchant >> pg
-    payment >> pg
-    operations >> pg
-    vault >> pg
-
+    users >> Edge(label="API key") >> gateway
+    psp >> Edge(label="webhook") >> gateway
+    gateway >> merchant
+    gateway >> payment
+    gateway >> operations
+    gateway >> vault
+    merchant >> db
+    payment >> db
+    operations >> db
+    vault >> db
     gateway >> cache
-    payment >> cache
     payment >> Edge(label="outbox") >> bus
-    operations >> bus
-    payment >> Edge(label="webhook") >> psp
-
-    gateway >> discovery
-    merchant >> discovery
-    payment >> discovery
-    operations >> discovery
-    vault >> discovery
-
-    merchant >> config
-    payment >> config
-    operations >> config
-    vault >> config
-
-    payment >> Edge(style="dashed") >> zipkin
-    operations >> Edge(style="dashed") >> metrics
 ```

@@ -36,25 +36,33 @@ For a local stack without discovery, `k8s` profile sets direct service URLs and 
 ## Diagram script
 
 ```python
-from diagrams import Diagram, Cluster, Edge
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.compute import Server
 
-with Diagram("discovery-service flow", show=False, direction="LR",
-             filename="./docs/assets/service_discovery_flow", outformat="png"):
-    with Cluster("discovery-service"):
-        registry = Server("Eureka server\nregistry")
-    with Cluster("Clients"):
-        gateway = Server("api-gateway")
-        merchant = Server("merchant")
-        payment = Server("payment")
-        operations = Server("operations")
-        vault = Server("vault")
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
 
-    gateway >> Edge(label="register / fetch") >> registry
-    merchant >> registry
-    payment >> registry
-    operations >> registry
-    vault >> registry
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
+             filename="./docs/assets/service_discovery_flow", outformat="png"):
+    gateway = node(Server, "gateway")
+    merchant = node(Server, "merchant")
+    payment = node(Server, "payment")
+    operations = node(Server, "operations")
+    vault = node(Server, "vault")
+    registry = node(Server, "registry")
+
+    gateway >> Edge(label="register") >> registry
+    merchant >> Edge(constraint="false") >> registry
+    payment >> Edge(constraint="false") >> registry
+    operations >> Edge(constraint="false") >> registry
+    vault >> Edge(constraint="false") >> registry
 ```
 
 Related: [container architecture](../00_architecture/02_container_architecture.md).

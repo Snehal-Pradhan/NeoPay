@@ -1,25 +1,32 @@
-from diagrams import Diagram, Cluster, Edge
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.compute import Server
 from diagrams.onprem.database import PostgreSQL
 from diagrams.onprem.queue import Kafka
 
-with Diagram("operations-service flow", show=False, direction="LR",
-             filename="./docs/assets/service_operations_flow", outformat="png"):
-    with Cluster("operations-service"):
-        api = Server("ReconController\nPayoutController\nSettlementController")
-        settle = Server("SettlementTransactionExecutor\nSettlementFeeCalculator")
-        recon = Server("ReconService")
-        hook = Server("WebhookDeliverExecutor\nWebhookRetryQueue")
-        repo = Server("Repositories")
-    db = PostgreSQL("operations-db")
-    bus = Kafka("kafka")
-    merchant = Server("merchant-service")
-    payment = Server("payment-service")
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
 
-    api >> settle >> repo
-    settle >> merchant
-    settle >> payment
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
+             filename="./docs/assets/service_operations_flow", outformat="png"):
+    bus = node(Kafka, "Kafka")
+    hook = node(Server, "webhook worker")
+    api = node(Server, "internal API")
+    settle = node(Server, "settlement")
+    recon = node(Server, "recon")
+    repo = node(Server, "repositories")
+    db = node(PostgreSQL, "operations-db")
+    payment = node(Server, "payment")
+    merchant = node(Server, "merchant")
+
+    bus >> Edge(label="consume") >> hook >> repo
+    api >> settle >> repo >> db
     api >> recon >> repo
-    bus >> hook
-    hook >> repo >> db
-    hook >> Edge(label="signed POST") >> merchant
+    settle >> payment
+    settle >> merchant

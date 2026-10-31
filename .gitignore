@@ -10,3 +10,4 @@ target/
 .opencode/
 *.env
 !*.env.example
+docs/assets/scripts/.icon-cache/

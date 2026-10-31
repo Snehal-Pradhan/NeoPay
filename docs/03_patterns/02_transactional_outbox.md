@@ -69,28 +69,33 @@ Related: [payment service](../02_services/payment_service.md), [resilience](04_r
 ## Diagram script
 
 ```python
-from diagrams import Diagram, Cluster, Edge
-from diagrams.onprem.compute import Server
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.database import PostgreSQL
 from diagrams.onprem.queue import Kafka
+from diagrams.onprem.compute import Server
 
-with Diagram("Transactional outbox", show=False, direction="LR",
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
+
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
              filename="./docs/assets/03_outbox_pattern", outformat="png"):
-    with Cluster("payment-service, one transaction"):
-        svc = Server("domain write")
-        payment = PostgreSQL("payment row")
-        outbox = PostgreSQL("outbox_event\nPENDING")
-    db = PostgreSQL("payment-db")
-    with Cluster("Relay"):
-        poller = Server("OutboxPoller\nShedLock 1m")
-        handler = Server("KafkaPublisher")
-        result = Server("OutboxResultHandler\nPUBLISHED / FAILED")
-    bus = Kafka("kafka topic")
+    write = node(Server, "domain write")
+    payment = node(PostgreSQL, "payment row")
+    outbox = node(PostgreSQL, "outbox row")
+    poller = node(Server, "poller")
+    bus = node(Kafka, "Kafka")
+    result = node(Server, "result handler")
 
-    svc >> Edge(label="insert") >> payment
-    svc >> Edge(label="insert same tx") >> outbox
-    payment - outbox
-    outbox >> Edge(label="select PENDING") >> db
-    db >> poller >> handler >> bus
-    handler >> result >> outbox
+    write >> payment
+    write >> outbox
+    outbox >> Edge(label="select") >> poller >> Edge(label="publish") >> bus
+    bus >> Edge(style="dashed", label="ack", constraint="false") >> result
+    result >> Edge(style="dashed", label="mark", constraint="false") >> outbox
 ```

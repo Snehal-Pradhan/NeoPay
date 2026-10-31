@@ -61,36 +61,41 @@ The 200-per-minute limit produced 0.11% `429` responses at 60 flows/s with 60 ke
 ## Diagram script
 
 ```python
-from diagrams import Diagram, Cluster, Edge
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.client import Users
-from diagrams.onprem.network import Internet
 from diagrams.onprem.compute import Server
 from diagrams.onprem.inmemory import Redis
 
-with Diagram("api-gateway flow", show=False, direction="LR",
-             filename="./docs/assets/service_api_gateway_flow", outformat="png"):
-    client = Users("Merchant client")
-    with Cluster("api-gateway-service"):
-        auth = Server("GatewayAuthFilter\nAPI key, JWT")
-        limit = Server("FixedWindowRateLimiter")
-        idem = Server("IdempotencyFilter")
-        router = Server("Spring Cloud Gateway\nroute table")
-    cache = Redis("Redis\nkey cache + counters")
-    with Cluster("Upstream"):
-        merchant = Server("merchant :9010")
-        payment = Server("payment :9020")
-        operations = Server("operations :9030")
-        vault = Server("vault :9040")
-    psp = Internet("PSP webhook")
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
 
-    client >> auth >> limit >> idem >> router
-    auth >> Edge(label="lookup") >> cache
-    limit >> Edge(label="INCR") >> cache
-    router >> merchant
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
+             filename="./docs/assets/service_api_gateway_flow", outformat="png"):
+    client = node(Users, "Merchants")
+    auth = node(Server, "auth filter")
+    limit = node(Server, "rate limit")
+    idem = node(Server, "idempotency")
+    router = node(Server, "router")
+    cache = node(Redis, "Redis")
+    payment = node(Server, "payment")
+    merchant = node(Server, "merchant")
+    operations = node(Server, "operations")
+    vault = node(Server, "vault")
+
+    client >> Edge(label="API key") >> auth >> limit >> idem >> router
+    auth >> Edge(label="lookup", style="dashed") >> cache
+    limit >> Edge(label="INCR", style="dashed") >> cache
     router >> payment
+    router >> merchant
     router >> operations
     router >> vault
-    psp >> Edge(label="public /webhook/stripe") >> router
 ```
 
 Related: [service map](overview.md), [idempotency](../03_patterns/03_idempotency.md), [resilience](../03_patterns/04_resilience_circuit_breakers.md).

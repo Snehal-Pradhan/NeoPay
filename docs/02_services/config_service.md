@@ -54,19 +54,27 @@ spring:
 ## Diagram script
 
 ```python
-from diagrams import Diagram, Cluster, Edge
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.compute import Server
 from diagrams.generic.storage import Storage
 
-with Diagram("config-service flow", show=False, direction="LR",
-             filename="./docs/assets/service_config_flow", outformat="png"):
-    with Cluster("config-service"):
-        api = Server("ConfigServer\nnative profile")
-        repo = Storage("classpath:/config\nper-service yml")
-    clients = Server("7 services\nspring.config.import")
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
 
-    api >> repo
-    clients >> Edge(label="GET /{service}/{profile}") >> api
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
+             filename="./docs/assets/service_config_flow", outformat="png"):
+    services = node(Server, "7 services")
+    server = node(Server, "config server")
+    files = node(Storage, "config YAML")
+
+    services >> Edge(label="import") >> server >> files
 ```
 
 Related: [ADR 0007](../adr/0007-native-config-server.md), [deployment](../04_operations/02_deployment_and_hpa.md).

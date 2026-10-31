@@ -1,18 +1,27 @@
-from diagrams import Diagram, Cluster, Edge
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
+from diagrams import Diagram, Edge
 from diagrams.onprem.compute import Server
 from diagrams.onprem.database import PostgreSQL
 from diagrams.onprem.queue import Kafka
 
-with Diagram("merchant-service flow", show=False, direction="LR",
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline"})
+
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
              filename="./docs/assets/service_merchant_flow", outformat="png"):
-    with Cluster("merchant-service"):
-        api = Server("MerchantController\nKycController\nWebhookConfigController")
-        svc = Server("MerchantService\nKycService\nLimitService")
-        outbox = Server("OutboxEventPublisher")
-        repo = Server("Repositories")
-    db = PostgreSQL("merchant-db")
-    bus = Kafka("kafka")
+    api = node(Server, "merchant API")
+    svc = node(Server, "merchant service")
+    repo = node(Server, "repositories")
+    db = node(PostgreSQL, "merchant-db")
+    outbox = node(Server, "outbox writer")
+    bus = node(Kafka, "Kafka")
 
     api >> svc >> repo >> db
-    svc >> outbox >> db
-    db >> Edge(label="poller") >> bus
+    svc >> outbox
+    outbox >> Edge(label="relay", style="dashed", constraint="false") >> bus

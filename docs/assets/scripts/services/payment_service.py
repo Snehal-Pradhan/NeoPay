@@ -1,29 +1,33 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from _style import GRAPH_ATTR, NODE_ATTR, EDGE_ATTR, node
+
 from diagrams import Diagram, Cluster, Edge
 from diagrams.onprem.compute import Server
 from diagrams.onprem.database import PostgreSQL
-from diagrams.onprem.inmemory import Redis
-from diagrams.onprem.queue import Kafka
 from diagrams.onprem.network import Internet
+from diagrams.onprem.queue import Kafka
 
-with Diagram("payment-service flow", show=False, direction="LR",
+G = dict(GRAPH_ATTR)
+G.update({"splines": "polyline", "ranksep": "0.75"})
+
+with Diagram("", show=False, direction="LR", graph_attr=G,
+             node_attr=NODE_ATTR, edge_attr=EDGE_ATTR,
              filename="./docs/assets/service_payment_flow", outformat="png"):
-    with Cluster("payment-service"):
-        api = Server("PaymentController\nOrderController\nDisputeController\nStripeWebhookController")
-        saga = Server("PaymentAuthorizationRecorder\nSaga compensation")
-        state = Server("PaymentStateMachine\nTransitionService")
-        ledger = Server("LedgerService\ndouble entry")
-        outbox = Server("OutboxEventPublisher")
-        repo = Server("Repositories")
-    db = PostgreSQL("payment-db")
-    cache = Redis("Redis\nidempotency marker")
-    bus = Kafka("kafka")
-    psp = Internet("PSP / simulator")
+    psp = node(Internet, "PSP")
+    api = node(Server, "payment API")
+    with Cluster("payment-service", graph_attr={"margin": "18", "fontsize": "11", "labeljust": "l"}):
+        saga = node(Server, "saga")
+        state = node(Server, "states")
+        ledger = node(Server, "ledger")
+        repo = node(Server, "repositories")
+        outbox = node(Server, "outbox")
+    db = node(PostgreSQL, "payment-db")
+    bus = node(Kafka, "Kafka")
 
-    api >> saga >> state
-    saga >> psp
-    saga >> ledger >> repo
-    saga >> outbox >> repo
-    api >> cache
-    api >> repo >> db
-    db >> Edge(label="poller") >> bus
-    psp >> Edge(label="signed webhook") >> api
+    psp >> Edge(label="webhook") >> api >> saga >> state >> ledger >> repo >> db >> bus
+    saga >> Edge(style="dashed") >> outbox
+    outbox >> repo
+    saga >> Edge(label="charge", style="dashed", constraint="false") >> psp
