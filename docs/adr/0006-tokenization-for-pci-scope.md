@@ -1,4 +1,4 @@
-# ADR 0006 — Tokenization to reduce PCI scope
+# ADR 0006  -  Tokenization to reduce PCI scope
 
 **Status:** Accepted
 

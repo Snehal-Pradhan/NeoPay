@@ -38,7 +38,7 @@ would otherwise flatter the number.
 | Kafka down during publish | outbox row stays `PENDING`; no event loss; the poller drains after restart |
 | Kafka down during webhook ingest | the webhook row commits; the outbox event is deferred, not dropped |
 
-## Measured — 2026-10-31, local Docker stack
+## Measured  -  2026-10-31, local Docker stack
 
 Machine: Apple silicon, Docker Desktop, single broker, single Postgres, seven JVM services,
 Jib images not used (jars run directly). Load: 15 flows/s for 90 s, 20 s outage.
@@ -61,7 +61,7 @@ Raw evidence: `perf/chaos-postgres.json`, `perf/chaos-kafka.json`, `perf/chaos-k
 | 0 duplicate groups | the unique idempotency index survives a datasource outage |
 | ledger delta 0 | no partial posting; the capture transaction is atomic |
 | outbox drains unattended | the poller resumes and replays; no event loss |
-| 24–28 s RTO | dominated by Postgres/broker restart, not by application backoff |
+| 24-28 s RTO | dominated by Postgres/broker restart, not by application backoff |
 
 ## Limits
 

@@ -1,4 +1,4 @@
-# Features — Microservices Edition
+# Features  -  Microservices Edition
 
 In-depth inventory of the distributed NeoPay-style platform.
 
@@ -21,8 +21,8 @@ In-depth inventory of the distributed NeoPay-style platform.
 | `vault-service` | 9040 | Cards, tokens, PAN encryption | vault DB, Redis |
 | `operations-service` | 9030 | Settlements, webhook delivery, DLQ, outbox | operations DB, merchant, payment, Kafka, Redis |
 | `config-service` | 8888 | Central configuration | native config repo |
-| `discovery-service` | 8761 | Eureka registry | — |
-| `common-lib` | — | Shared DTOs, entities, enums, auto-configuration | — |
+| `discovery-service` | 8761 | Eureka registry |  -  |
+| `common-lib` |  -  | Shared DTOs, entities, enums, auto-configuration |  -  |
 
 ---
 

@@ -74,7 +74,7 @@ Measured on the development machine (2026-10-26):
 |---|---:|---:|---|
 | Serial, all suites | 391s | 523 | `mvn test` per project, one after another |
 | Parallel, unit only (`test-all.sh`) | 156s | 509 | 4 projects at a time, `@Tag("integration")` excluded |
-| Parallel, all suites | 1061s | 523 | **do not use** — six concurrent builds plus Docker contend |
+| Parallel, all suites | 1061s | 523 | **do not use**  -  six concurrent builds plus Docker contend |
 
 `--full` therefore runs serially. Integration tests are not a good parallel
 workload on a single machine; they are parallelised in CI by the job matrix instead.
@@ -97,21 +97,21 @@ ignores `includes` on `BUNDLE` rules.
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 84% | 78% | 76% (`full-baseline`) |
-| domain (`entity`, `money`, `ratelimit`, `iso20022`) | 91% | 82% | — |
-| application (`idempotency`) | 82% | 83% | — |
-| api (`web`, `exception`) | 83% | 85% | — |
-| infrastructure (`audit`, `cache`, `context`, `util`, `domain`) | 81% | 76% | — |
-| critical classes (`Money`, `FixedWindowRateLimiter`, `RedisIdempotencyStore`) | — | — | 80% |
+| domain (`entity`, `money`, `ratelimit`, `iso20022`) | 91% | 82% |  -  |
+| application (`idempotency`) | 82% | 83% |  -  |
+| api (`web`, `exception`) | 83% | 85% |  -  |
+| infrastructure (`audit`, `cache`, `context`, `util`, `domain`) | 81% | 76% |  -  |
+| critical classes (`Money`, `FixedWindowRateLimiter`, `RedisIdempotencyStore`) |  -  |  -  | 80% |
 
 `merchant-service` (ratcheted 2026-10-26, never lowered):
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 99% | 97% | 99% (`mutation-baseline`) |
-| domain (`entity`) | 99% | 99% | — |
-| application (`service`, `impl`, `risk`) | 99% | 96% | — |
-| api (`controller`, `api`) | 99% | — | — |
-| infrastructure (`security`, `repository`) | 99% | — | — |
+| domain (`entity`) | 99% | 99% |  -  |
+| application (`service`, `impl`, `risk`) | 99% | 96% |  -  |
+| api (`controller`, `api`) | 99% |  -  |  -  |
+| infrastructure (`security`, `repository`) | 99% |  -  |  -  |
 
 `merchant-service` mutation command:
 
@@ -124,19 +124,19 @@ mvn -f merchant-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutatio
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 99% | 99% | 99% (`mutation-baseline`) |
-| application (`service`, `impl`) | 99% | 99% | — |
-| api (`controller`) | 99% | — | — |
-| infrastructure (`processor`, `validation`, `logging`) | 99% | 99% | — |
+| application (`service`, `impl`) | 99% | 99% |  -  |
+| api (`controller`) | 99% |  -  |  -  |
+| infrastructure (`processor`, `validation`, `logging`) | 99% | 99% |  -  |
 
 `payment-service` (ratcheted 2026-10-26, never lowered):
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 84% | 69% | 90% (`mutation-baseline`, Testcontainers excluded) |
-| domain (`statemachine`, `ledger`, `domain`) | 90% | 79% | — |
-| application (`service`, `impl`, `saga`, `dispute`, `fx`, `risk`) | 87% | 70% | — |
-| api (`controller`, `api`) | 99% | — | — |
-| infrastructure (`outbox`, `client`, `gateway`, `adapter`, `processor`, `repository`, `metrics`, `report`, `simulator`, `eventsourcing`, `strategy`, `simulation`) | 77% | 62% | — |
+| domain (`statemachine`, `ledger`, `domain`) | 90% | 79% |  -  |
+| application (`service`, `impl`, `saga`, `dispute`, `fx`, `risk`) | 87% | 70% |  -  |
+| api (`controller`, `api`) | 99% |  -  |  -  |
+| infrastructure (`outbox`, `client`, `gateway`, `adapter`, `processor`, `repository`, `metrics`, `report`, `simulator`, `eventsourcing`, `strategy`, `simulation`) | 77% | 62% |  -  |
 
 Mutation commands:
 
@@ -150,16 +150,16 @@ mvn -f payment-service/pom.xml org.pitest:pitest-maven:mutationCoverage@mutation
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 91% | 83% | 80% (`mutation-baseline`) |
-| domain (`settlement`, `iso20022`, `entity`) | 83% | 74% | — |
-| application (`recon`, `payout`) | 95% | 81% | — |
-| infrastructure (`webhook`, `outbox`) | 94% | 90% | — |
+| domain (`settlement`, `iso20022`, `entity`) | 83% | 74% |  -  |
+| application (`recon`, `payout`) | 95% | 81% |  -  |
+| infrastructure (`webhook`, `outbox`) | 94% | 90% |  -  |
 
 `api-gateway-service` (ratcheted 2026-10-26, never lowered):
 
 | Scope | Line | Branch | Mutation |
 |---|---:|---:|---:|
 | bundle | 87% | 77% | 78% (`mutation-baseline`) |
-| security (`security`, `client`) | 87% | 77% | — |
+| security (`security`, `client`) | 87% | 77% |  -  |
 
 Identity headers (`X-Merchant-Id`, `X-Key-Id`, `X-Environment`, `X-User-Role`) are
 stripped from inbound requests by `HeaderAugmentingRequestWrapper` and can only be

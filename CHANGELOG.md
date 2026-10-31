@@ -2,7 +2,7 @@
 
 All notable changes to the microservices edition are documented here.
 
-## [Fintech Gate 12] — 2026-10-26 — formal model
+## [Fintech Gate 12]  -  2026-10-26  -  formal model
 
 ### Added
 
@@ -23,7 +23,7 @@ All notable changes to the microservices edition are documented here.
 
 - External publication; the article requires an account.
 
-## [Fintech Gate 8] — 2026-10-26 — FX and multi-currency
+## [Fintech Gate 8]  -  2026-10-26  -  FX and multi-currency
 
 ### Added
 
@@ -50,7 +50,7 @@ All notable changes to the microservices edition are documented here.
 - Configured rates use zero spread by default.
 - Only INR quotes are supported.
 
-## [Fintech Gate 9] — 2026-10-26 — ISO 20022
+## [Fintech Gate 9]  -  2026-10-26  -  ISO 20022
 
 ### Added
 
@@ -69,7 +69,7 @@ All notable changes to the microservices edition are documented here.
 - `camt.053` feeds `StatementRow` for reconciliation.
 - 379 tests across eight modules, 0 failures.
 
-## [Fintech Gate 10 completion] — 2026-10-26
+## [Fintech Gate 10 completion]  -  2026-10-26
 
 ### Added
 
@@ -90,7 +90,7 @@ All notable changes to the microservices edition are documented here.
 - 5 enforcer tests; full payment suite passes.
 - Gate 10 at 100%.
 
-## [Fintech Gate 10] — 2026-10-26 — KYC, limits and risk
+## [Fintech Gate 10]  -  2026-10-26  -  KYC, limits and risk
 
 ### Added
 
@@ -114,7 +114,7 @@ All notable changes to the microservices edition are documented here.
   the transaction path.
 - Sanctions screening is a configured substring list, not a provider integration.
 
-## [Fintech Gate 11] — 2026-10-26 — reporting
+## [Fintech Gate 11]  -  2026-10-26  -  reporting
 
 ### Added
 
@@ -141,15 +141,15 @@ All notable changes to the microservices edition are documented here.
 - No period close or trial balance.
 - Reports are on demand; no signed daily drop to object storage.
 
-## [Fintech Gates 5, 6, 7] — 2026-10-26
+## [Fintech Gates 5, 6, 7]  -  2026-10-26
 
-### Gate 5 — reserve release
+### Gate 5  -  reserve release
 
 - `ReserveReleaseService`: releases retained reserve to the settlement account after
   `reserve.hold-days`, once per reserve line, guarded by a unique source line id and
   ShedLock.
 
-### Gate 6 — disputes
+### Gate 6  -  disputes
 
 - `Dispute` lifecycle `OPENED → WON / LOST` with a source account captured at open.
 - Opening a dispute posts `source -> DISPUTE_HOLD`; a won dispute reverses it; a lost
@@ -157,7 +157,7 @@ All notable changes to the microservices edition are documented here.
 - Endpoints under `/v1/payments/{paymentId}/disputes`, plus internal resolution.
 - `DISPUTE_OPENED` and `DISPUTE_RESOLVED` events.
 
-### Gate 7 — payouts
+### Gate 7  -  payouts
 
 - `Payout` per settlement with idempotent creation, `NACH-` reference and CSV file.
 - Return handling posts `BANK_SETTLEMENT -> MERCHANT_PAYABLE` and reopens the merchant
@@ -172,7 +172,7 @@ All notable changes to the microservices edition are documented here.
 - Payout creation is idempotent; return reopens carry-forward.
 - 346 tests across eight modules, 0 failures.
 
-## [Fintech Gate 5] — 2026-10-26 — settlement correctness
+## [Fintech Gate 5]  -  2026-10-26  -  settlement correctness
 
 ### Added
 
@@ -203,7 +203,7 @@ All notable changes to the microservices edition are documented here.
 - Refund amounts in the settlement view remain zero; refunds are posted to the ledger
   but not deducted from the settlement base.
 
-## [Fintech Gate 4] — 2026-10-26 — three-way reconciliation
+## [Fintech Gate 4]  -  2026-10-26  -  three-way reconciliation
 
 ### Added
 
@@ -224,7 +224,7 @@ All notable changes to the microservices edition are documented here.
 - Duplicates on either side are detected before missing/mismatch checks.
 - 326 tests across eight modules, 0 failures.
 
-## [Fintech Gate 2] — 2026-10-26 — idempotency coverage
+## [Fintech Gate 2]  -  2026-10-26  -  idempotency coverage
 
 ### Changed
 
@@ -245,7 +245,7 @@ All notable changes to the microservices edition are documented here.
 - Payments, capture, refunds and settlement ledger postings all have replay or
   duplicate-concurrency coverage.
 
-## [Fintech Gate 3] — 2026-10-26 — refunds
+## [Fintech Gate 3]  -  2026-10-26  -  refunds
 
 ### Added
 
@@ -274,7 +274,7 @@ All notable changes to the microservices edition are documented here.
   transactions.
 - Over-refund and replay covered.
 
-## [Fintech Gate 1] — 2026-10-26 — production double-entry ledger
+## [Fintech Gate 1]  -  2026-10-26  -  production double-entry ledger
 
 ### Added
 
@@ -297,7 +297,7 @@ All notable changes to the microservices edition are documented here.
 - Settlement executor test asserts the ledger call.
 - Replay of the same pair is a no-op.
 
-## [Ownership] — 2026-10-26
+## [Ownership]  -  2026-10-26
 
 ### Changed
 
@@ -323,7 +323,7 @@ All notable changes to the microservices edition are documented here.
 - `grep` over main sources returns no TODO, FIXME, XXX or HACK.
 - No `com.snehal` reference remains in source or build files.
 
-## [Coverage closure] — 2026-10-26
+## [Coverage closure]  -  2026-10-26
 
 ### Added
 
@@ -362,7 +362,7 @@ transitions: routing transitions through the aggregate created a package cycle w
 `statemachine`, which ArchUnit rejects. The state machine stays the transition
 authority; the aggregate stays the money authority.
 
-## [Post-gate] — 2026-10-25 — simulation, publication, behaviour, coverage
+## [Post-gate]  -  2026-10-25  -  simulation, publication, behaviour, coverage
 
 ### Changed
 
@@ -398,7 +398,7 @@ authority; the aggregate stays the money authority.
 - 80% coverage target not met.
 - Article not published externally; no account configured.
 
-## [Gate 11] — 2026-10-25 — deterministic simulation
+## [Gate 11]  -  2026-10-25  -  deterministic simulation
 
 ### Added
 
@@ -426,7 +426,7 @@ authority; the aggregate stays the money authority.
   `PaymentStateMachine`. Divergence between model and implementation remains possible.
 - No concurrency or clock-skew faults in the simulator.
 
-## [Gate 2] — 2026-10-25 — Payment behaviour (partial)
+## [Gate 2]  -  2026-10-25  -  Payment behaviour (partial)
 
 ### Changed
 
@@ -443,7 +443,7 @@ authority; the aggregate stays the money authority.
 - Value objects are used in the aggregate and tests, not in service or controller
   signatures.
 
-## [Gate 3] — 2026-10-25 — coverage expansion (partial)
+## [Gate 3]  -  2026-10-25  -  coverage expansion (partial)
 
 ### Added
 
@@ -465,7 +465,7 @@ authority; the aggregate stays the money authority.
   common-lib 45.6%.
 - No cross-service end-to-end test covering settlement and webhook delivery in one run.
 
-## [Gate 5] — 2026-10-25 — event store, replay and snapshots
+## [Gate 5]  -  2026-10-25  -  event store, replay and snapshots
 
 ### Added
 
@@ -493,7 +493,7 @@ authority; the aggregate stays the money authority.
   not rewrite `payment`.
 - Only `PAYMENT` aggregates are event-sourced.
 
-## [Gate 7] — 2026-10-25 — performance
+## [Gate 7]  -  2026-10-25  -  performance
 
 ### Added
 
@@ -519,11 +519,11 @@ authority; the aggregate stays the money authority.
 - No committed flame graph; profiling procedure documented only.
 - Measurement is service-level with a mocked gateway, not the full HTTP path.
 
-## [Gate 10] — 2026-10-25 — documentation
+## [Gate 10]  -  2026-10-25  -  documentation
 
 ### Added
 
-- `docs/adr/0001`–`0008`: outbox, ShedLock, idempotency, saga compensation, database
+- `docs/adr/0001`-`0008`: outbox, ShedLock, idempotency, saga compensation, database
   per service, tokenization, native config server, staged event sourcing.
 - `docs/c4/context.md`, `docs/c4/container.md`, `docs/c4/component-payment.md` with
   Mermaid diagrams.
@@ -535,7 +535,7 @@ authority; the aggregate stays the money authority.
   non-goals, rejected alternatives, weak points.
 - README: test layers, quality gates, documentation index, updated gaps.
 
-## [Gate 12] — 2026-10-25 — complexity budget
+## [Gate 12]  -  2026-10-25  -  complexity budget
 
 ### Added
 
@@ -556,7 +556,7 @@ authority; the aggregate stays the money authority.
 - `IdempotencyFilter.replay` continued into `substring` after resolving a missing
   separator, throwing `StringIndexOutOfBoundsException`. Now returns.
 
-## [Gate 2] — 2026-10-25 — domain model (partial)
+## [Gate 2]  -  2026-10-25  -  domain model (partial)
 
 ### Added
 
@@ -579,7 +579,7 @@ authority; the aggregate stays the money authority.
 - Raw `UUID` identifiers remain in service and controller signatures.
 - `Money` is stored as `(amountUnits, currency)`; scale is derived, not persisted.
 
-## [Gate 8] — 2026-10-25 — observability in code
+## [Gate 8]  -  2026-10-25  -  observability in code
 
 ### Added
 
@@ -604,7 +604,7 @@ authority; the aggregate stays the money authority.
 - Trace propagation across Feign and Kafka headers is not asserted by a test.
 - Log aggregation and retention are infrastructure concerns, out of scope here.
 
-## [Gate 6] — 2026-10-25 — API contract
+## [Gate 6]  -  2026-10-25  -  API contract
 
 ### Added
 
@@ -634,7 +634,7 @@ authority; the aggregate stays the money authority.
 - Spec diff gate in CI (no pipeline exists yet).
 - Committed snapshots for merchant, vault and operations services.
 
-## [Gate 4] — 2026-10-25 — property-based tests
+## [Gate 4]  -  2026-10-25  -  property-based tests
 
 ### Added
 
@@ -653,7 +653,7 @@ authority; the aggregate stays the money authority.
 - Approximately 66,000 generated cases per run.
 - All eight modules verify: 106 tests, 0 failures, 0 errors.
 
-## [Gate 3] — 2026-10-25 — test pyramid (partial)
+## [Gate 3]  -  2026-10-25  -  test pyramid (partial)
 
 ### Added
 
@@ -698,7 +698,7 @@ authority; the aggregate stays the money authority.
 
 Gate 3 remains open on those two items.
 
-## [Gate 9] — 2026-10-25 — static analysis
+## [Gate 9]  -  2026-10-25  -  static analysis
 
 ### Added
 
@@ -719,7 +719,7 @@ Gate 3 remains open on those two items.
 - `PaymentServiceImpl` bound an unused pattern variable in two `instanceof` checks.
 - `WebhookDeliverExecutor.MAX_ATTEMPTS` was an instance field holding a constant.
 
-## [Gate 1] — 2026-10-25 — package boundaries
+## [Gate 1]  -  2026-10-25  -  package boundaries
 
 ### Added
 
@@ -734,7 +734,7 @@ Gate 3 remains open on those two items.
 - `InternalApiKeyController` injected `ApiKeyRepository` directly. Lookup moved to
   `ApiKeyService.findCacheEntry`; the controller now depends only on the interface.
 
-## [Gate 0] — 2026-10-25 — SDE defect baseline
+## [Gate 0]  -  2026-10-25  -  SDE defect baseline
 
 ### Fixed
 
@@ -766,7 +766,7 @@ Gate 3 remains open on those two items.
 
 - All seven modules green: 27 tests, 0 failures, 0 errors.
 
-## [Unreleased] — 2026-10-24
+## [Unreleased]  -  2026-10-24
 
 ### Added
 

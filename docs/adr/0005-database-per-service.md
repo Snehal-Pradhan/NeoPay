@@ -1,4 +1,4 @@
-# ADR 0005 — One database per service
+# ADR 0005  -  One database per service
 
 **Status:** Accepted
 

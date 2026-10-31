@@ -1,4 +1,4 @@
-# PCI Scope — SAQ-A Argument
+# PCI Scope  -  SAQ-A Argument
 
 ## Claim
 

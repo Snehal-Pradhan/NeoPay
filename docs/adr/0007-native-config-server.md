@@ -1,4 +1,4 @@
-# ADR 0007 — Native config server over a Git-backed config repository
+# ADR 0007  -  Native config server over a Git-backed config repository
 
 **Status:** Accepted
 

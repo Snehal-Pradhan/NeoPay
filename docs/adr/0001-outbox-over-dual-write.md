@@ -1,4 +1,4 @@
-# ADR 0001 — Transactional outbox over dual write
+# ADR 0001  -  Transactional outbox over dual write
 
 **Status:** Accepted
 

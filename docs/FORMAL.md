@@ -77,6 +77,6 @@ mvn -q -f payment-service/pom.xml test -Dtest=ModelConformanceTest
 
 ## Publication
 
-The combined correctness story — deterministic simulation, formal model, conformance —
+The combined correctness story  -  deterministic simulation, formal model, conformance  - 
 exists as a repository artifact and as a publication-ready article under `docs/blog/`.
 External publication requires an account on GitHub Pages, Dev.to or a conference CFP.

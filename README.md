@@ -1,4 +1,4 @@
-# NeoPay — Microservices Payments Platform
+# NeoPay  -  Microservices Payments Platform
 
 [![CI](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml/badge.svg)](https://github.com/Snehal-Pradhan/NeoPay/actions/workflows/ci.yml)
 
@@ -58,14 +58,14 @@ Packages use the `com.snehal.neopay` namespace throughout.
 
 | Service | Port | Database | Responsibility |
 |---|---:|---|---|
-| `api-gateway-service` | 8080 | — | Routing, Basic API-key auth, JWT auth, identity headers, rate limiting |
+| `api-gateway-service` | 8080 |  -  | Routing, Basic API-key auth, JWT auth, identity headers, rate limiting |
 | `merchant-service` | 9010 | `neopay-merchant-db` | Signup/login, API keys, customers, webhook configs, internal lookups |
 | `payment-service` | 9020 | `neopay-payment-db` | Orders, payments, idempotency, compensation, gateway/processor routing, outbox, simulator |
 | `vault-service` | 9040 | `neopay-vault-db` | PAN tokenization, AES-GCM envelope encryption, token charging |
 | `operations-service` | 9030 | `neopay-operations-db` | Settlements, bank transfers, webhook fan-out/retry/DLQ, its own outbox |
-| `config-service` | 8888 | — | Spring Cloud Config Server using the bundled native config repo |
-| `discovery-service` | 8761 | — | Eureka service registry |
-| `common-lib` | — | — | Shared types and auto-configuration |
+| `config-service` | 8888 |  -  | Spring Cloud Config Server using the bundled native config repo |
+| `discovery-service` | 8761 |  -  | Eureka service registry |
+| `common-lib` |  -  |  -  | Shared types and auto-configuration |
 
 ## Prerequisites
 
@@ -168,9 +168,9 @@ Production-style overrides are environment variables, including `JWT_SECRET`, `V
 | `vault-service` | 29 | 100.0% | 100.0% | 100% |
 | `operations-service` | 79 | 88.9% | 83.6% | 73% |
 | `api-gateway-service` | 38 | 87.8% | 77.3% | 80% |
-| `discovery-service` | 1 | context load only | — | — |
-| `config-service` | 1 | context load only | — | — |
-| **Total** | **530** | — | — | — |
+| `discovery-service` | 1 | context load only |  -  |  -  |
+| `config-service` | 1 | context load only |  -  |  -  |
+| **Total** | **530** |  -  |  -  |  -  |
 
 Test layers:
 
@@ -194,7 +194,7 @@ Quality gates enforced on `verify`:
 | Compiler-level correctness | ErrorProne |
 | Source file length ≤300 lines | `scripts/complexity-budget.sh` |
 | Bundle and per-layer line/branch floors | JaCoCo + `scripts/coverage-gate.py` |
-| Mutation floors per module (73–100%) | PIT |
+| Mutation floors per module (73-100%) | PIT |
 
 Thresholds are ratchets: they were raised after each test-hardening pass and are
 never lowered. Full detail lives in `TESTING.md`.
@@ -207,7 +207,7 @@ separate merchant API keys.
 
 | Metric | Measured | Threshold |
 |---|---:|---:|
-| Throughput | 30.0 req/s | — |
+| Throughput | 30.0 req/s |  -  |
 | Error rate | 0.00% (0/1,800) | < 1% |
 | `POST /v1/orders` p95 | 80.9 ms | < 250 ms |
 | `POST /v1/payments` p95 | 41.2 ms | < 350 ms |
@@ -237,7 +237,7 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 - initiate card payment (payment → vault over Feign/Eureka)
 - scheduled bank callback → `CAPTURED` + order `PAID`
 - payment idempotency (`X-Idempotency-Key` returns the same payment, one DB row)
-- outbox → Kafka → operations webhook fan-out → receiver `200` (2–3 events delivered)
+- outbox → Kafka → operations webhook fan-out → receiver `200` (2-3 events delivered)
 - ShedLock keys in Redis
 - gateway 401 for invalid/revoked credentials and structured error envelopes
 
@@ -259,11 +259,11 @@ Executed both locally and on every push by the `end-to-end` CI job, through the 
 | `docs/DESIGN.md` | Invariants, consistency model, failure modes, weak points |
 | `docs/SIMULATION.md` | Deterministic 10M-transaction simulation and results |
 | `docs/POSTMORTEM.md` | Six real defects: symptom, root cause, fix, prevention |
-| `docs/runbook.md` | Outbox stall, DLQ, Redis loss, Kafka lag, settlement failure |
+| `docs/runbook.md` | Symptom-first procedures: outbox, DLQ, Redis, Kafka, settlement, webhooks, disputes, pricing, config |
 | `docs/c4/` | Context, container, and payment component diagrams |
-| `docs/adr/` | Eight architecture decision records |
+| `docs/adr/` | Twelve architecture decision records |
 | `docs/diagrams/` | SVG overview and eight Eraser.io service architecture definitions |
-| `ROADMAP.md` | Remaining engineering gates and scoring |
+| `CONTRIBUTING.md` | Build, test, pull-request rules |
 | `CHANGELOG.md` | Phase-by-phase history |
 
 ## Known gaps

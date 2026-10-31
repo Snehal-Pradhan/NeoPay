@@ -1,4 +1,4 @@
-# C4 — Components: payment-service
+# C4  -  Components: payment-service
 
 ```mermaid
 flowchart TB

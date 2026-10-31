@@ -1,9 +1,9 @@
-# Deterministic Payment Simulation — 10 Million Transactions
+# Deterministic Payment Simulation  -  10 Million Transactions
 
 ## Problem
 
 Payment systems fail in schedules, not in single requests. A retry that duplicates a
-charge, a refund that races a settlement, a callback that arrives after a timeout —
+charge, a refund that races a settlement, a callback that arrives after a timeout  - 
 each is rare alone and expensive in combination. Example-based tests cover the cases
 someone thought of. They cannot cover the schedules nobody wrote down.
 

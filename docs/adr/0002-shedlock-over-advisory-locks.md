@@ -1,4 +1,4 @@
-# ADR 0002 — ShedLock over database advisory locks
+# ADR 0002  -  ShedLock over database advisory locks
 
 **Status:** Accepted
 

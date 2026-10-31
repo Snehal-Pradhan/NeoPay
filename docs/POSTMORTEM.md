@@ -11,7 +11,7 @@ prevention.
 
 **Root cause:** `double FEE_RATE = 0.02`. Binary floating point cannot represent 0.02,
 so `25 * 0.02` evaluates to `0.49999999999999994` and rounds down. Every amount
-congruent to 25 (mod 100) paise was affected — about 1 in 100.
+congruent to 25 (mod 100) paise was affected  -  about 1 in 100.
 
 **Blast radius:** systematic undercharging on settlement; GST inherited the error and
 compounded it.

@@ -1,4 +1,4 @@
-# ADR 0004 — Saga compensation over distributed transactions
+# ADR 0004  -  Saga compensation over distributed transactions
 
 **Status:** Accepted
 

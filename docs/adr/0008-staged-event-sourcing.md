@@ -1,4 +1,4 @@
-# ADR 0008 — Staged event sourcing: aggregate now, persistence projection later
+# ADR 0008  -  Staged event sourcing: aggregate now, persistence projection later
 
 **Status:** Accepted, partially implemented
 

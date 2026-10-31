@@ -22,8 +22,8 @@ mvn -q -f payment-service/pom.xml test -Dtest=OpenApiContractTest -Dopenapi.writ
 | Rule | Detail |
 |---|---|
 | Scheme | Path-based major version: `/v1/...` |
-| Additive change | New optional field or endpoint — no version bump |
-| Breaking change | Field removal, type change, required-field addition — new `/v2` |
+| Additive change | New optional field or endpoint  -  no version bump |
+| Breaking change | Field removal, type change, required-field addition  -  new `/v2` |
 | Deprecation | `Deprecation` and `Sunset` response headers on the deprecated operation |
 | Overlap | Old and new major versions run concurrently for at least one release cycle |
 
@@ -90,14 +90,14 @@ Defaults: `size=20`, `sort=createdAt,desc`. Maximum page size: 100.
 
 | Endpoint | Idempotent | Paginated |
 |---|---|---|
-| `POST /v1/payments` | yes | — |
-| `POST /v1/payments/{id}/refunds` | yes | — |
-| `GET /v1/payments/{id}/refunds` | — | no |
-| `POST /v1/orders` | no | — |
-| `POST /v1/merchants/api-keys` | no | — |
-| `GET /v1/merchants/api-keys` | — | yes |
-| `GET /v1/merchants/webhooks` | — | yes |
-| `POST /v1/merchants/webhooks` | no | — |
+| `POST /v1/payments` | yes |  -  |
+| `POST /v1/payments/{id}/refunds` | yes |  -  |
+| `GET /v1/payments/{id}/refunds` |  -  | no |
+| `POST /v1/orders` | no |  -  |
+| `POST /v1/merchants/api-keys` | no |  -  |
+| `GET /v1/merchants/api-keys` |  -  | yes |
+| `GET /v1/merchants/webhooks` |  -  | yes |
+| `POST /v1/merchants/webhooks` | no |  -  |
 
 ## Breaking-change checklist
 

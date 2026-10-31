@@ -1,8 +1,8 @@
-# C4 — System Context
+# C4  -  System Context
 
 ```mermaid
 C4Context
-    title System Context — NeoPay Clone
+    title System Context  -  NeoPay Clone
 
     Person(merchant, "Merchant", "Creates orders, takes payments, receives webhooks")
     Person(customer, "Customer", "Pays through a checkout surface")

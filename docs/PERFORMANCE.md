@@ -38,19 +38,19 @@ requests/minute.
 
 | Metric | Measured | Threshold |
 |---|---:|---:|
-| Flows (order + payment) | 900 | — |
-| Total HTTP requests | 1,800 | — |
-| Throughput | 30.0 req/s | — |
+| Flows (order + payment) | 900 |  -  |
+| Total HTTP requests | 1,800 |  -  |
+| Throughput | 30.0 req/s |  -  |
 | Error rate (`http_req_failed`) | 0.00% (0/1,800) | < 1.00% |
 | Checks passed | 100% (2,700/2,700) | 100% |
-| Overall latency p50 | 13.9 ms | — |
+| Overall latency p50 | 13.9 ms |  -  |
 | Overall latency p95 | 42.8 ms | < 300 ms |
-| Overall latency max | 490.3 ms | — |
-| `POST /v1/orders` p50 | 10.9 ms | — |
+| Overall latency max | 490.3 ms |  -  |
+| `POST /v1/orders` p50 | 10.9 ms |  -  |
 | `POST /v1/orders` p95 | 80.9 ms | < 250 ms |
-| `POST /v1/payments` p50 | 17.9 ms | — |
+| `POST /v1/payments` p50 | 17.9 ms |  -  |
 | `POST /v1/payments` p95 | 41.2 ms | < 350 ms |
-| `POST /v1/payments` max | 107.2 ms | — |
+| `POST /v1/payments` max | 107.2 ms |  -  |
 
 Raw artifact: `perf/k6-summary.json`. Console output: `perf/k6-output.txt`.
 
@@ -142,7 +142,7 @@ A committed flame graph is still outstanding.
 - No sustained soak; 300 sequential samples, not concurrent load.
 - No JVM warmup beyond 50 iterations.
 
-## Soak — sustained arrival rate
+## Soak  -  sustained arrival rate
 
 Two runs against the local stack (7 JVM services, single Postgres, single Kafka, 60 TEST
 keys, ramp 2 min, hold, ramp-down 2 min). Machine: Apple silicon, Docker Desktop.
@@ -160,7 +160,7 @@ At 60 keys and 60 flows/s the average is 120 requests/min/key, inside the limit,
 inside one window exceed 200. The limiter is a product control, not a defect, so the soak is
 reported at a rate it admits.
 
-Practical ceiling on this machine with 60 keys: **40–48 flows/s sustained**. Above that the
+Practical ceiling on this machine with 60 keys: **40-48 flows/s sustained**. Above that the
 limiter, not the services, is the bottleneck.
 
 Reproduce:

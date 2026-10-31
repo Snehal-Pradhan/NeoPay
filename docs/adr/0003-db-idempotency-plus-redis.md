@@ -1,4 +1,4 @@
-# ADR 0003 — Database uniqueness plus Redis marker for idempotency
+# ADR 0003  -  Database uniqueness plus Redis marker for idempotency
 
 **Status:** Accepted
 
