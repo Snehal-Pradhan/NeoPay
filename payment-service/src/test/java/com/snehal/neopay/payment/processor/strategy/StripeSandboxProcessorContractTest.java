@@ -60,7 +60,8 @@ class StripeSandboxProcessorContractTest {
                 .withHeader("Authorization", equalTo("Bearer sk_test_123"))
                 .withHeader("Idempotency-Key", equalTo(paymentId.toString()))
                 .withHeader("Content-Type", equalTo("application/x-www-form-urlencoded"))
-                .withRequestBody(equalTo("amount=5000&currency=inr&confirm=true")));
+                .withRequestBody(equalTo("amount=5000&currency=inr&confirm=true"
+                        + "&metadata[payment_id]=" + paymentId)));
     }
 
     @Test

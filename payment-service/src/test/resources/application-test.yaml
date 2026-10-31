@@ -42,3 +42,9 @@ payment:
 
 risk:
   enforcement-enabled: false
+
+stripe:
+  sandbox:
+    base-url: http://localhost:9999
+    api-key: sk_test_placeholder
+    webhook-secret: whsec_test_secret

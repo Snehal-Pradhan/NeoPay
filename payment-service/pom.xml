@@ -400,6 +400,7 @@
 								<param>com.snehal.neopay.payment.risk.*</param>
 								<param>com.snehal.neopay.payment.fx.*</param>
 								<param>com.snehal.neopay.payment.outbox.*</param>
+								<param>com.snehal.neopay.payment.webhook.*</param>
 							</targetClasses>
 							<excludedClasses>
 								<param>*Application</param>

@@ -46,7 +46,8 @@ public class StripeSandboxProcessor implements PaymentProcessor {
     public PaymentProcessorResponse charge(PaymentProcessorRequest request) {
         String form = "amount=" + request.amount().getAmountUnits()
                 + "&currency=" + request.amount().getCurrency().toLowerCase(Locale.ROOT)
-                + "&confirm=true";
+                + "&confirm=true"
+                + "&metadata[payment_id]=" + request.paymentId();
 
         RestClient.RequestHeadersSpec<?> call = restClient.post()
                 .uri("/v1/payment_intents")

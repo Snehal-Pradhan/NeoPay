@@ -33,6 +33,10 @@ spring:
               uri: ${VAULT_SERVICE_URI:lb://vault-service}
               predicates:
                 - Path=/v1/vault/**
+            - id: stripe-webhook
+              uri: ${PAYMENT_SERVICE_URI:lb://payment-service}
+              predicates:
+                - Path=/webhook/stripe
             - id: operations-service
               uri: ${OPERATIONS_SERVICE_URI:lb://operations-service}
               predicates:

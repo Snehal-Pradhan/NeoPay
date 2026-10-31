@@ -54,3 +54,4 @@ stripe:
   sandbox:
     base-url: ${STRIPE_SANDBOX_BASE_URL:https://api.stripe.com}
     api-key: ${STRIPE_SANDBOX_API_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}

@@ -40,4 +40,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
                                                       Collection<PaymentStatus> statuses);
 
     Optional<Payment> findByMerchantIdAndIdempotencyKey(UUID merchantId, String idempotencyKey);
+
+    Optional<Payment> findByProcessorReference(String processorReference);
 }
