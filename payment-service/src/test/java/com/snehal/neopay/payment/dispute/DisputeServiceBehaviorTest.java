@@ -47,8 +47,8 @@ class DisputeServiceBehaviorTest {
         paymentRepository = mock(PaymentRepository.class);
         ledgerService = mock(LedgerService.class);
         eventPublisher = mock(OutboxEventPublisher.class);
-        service = new DisputeService(disputeRepository, paymentRepository, ledgerService,
-                eventPublisher);
+        service = new DisputeService(disputeRepository, paymentRepository,
+                mock(DisputeEvidenceRepository.class), ledgerService, eventPublisher);
         when(disputeRepository.save(any(Dispute.class))).thenAnswer(invocation -> {
             Dispute dispute = invocation.getArgument(0);
             if (dispute.getId() == null) {

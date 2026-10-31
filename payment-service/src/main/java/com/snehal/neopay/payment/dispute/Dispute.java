@@ -68,15 +68,52 @@ public class Dispute {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
+    @Column(name = "evidence_due_at")
+    private LocalDateTime evidenceDueAt;
+
+    @Column(name = "evidence_submitted_at")
+    private LocalDateTime evidenceSubmittedAt;
+
+    @Column(name = "evidence_reference", length = 128)
+    private String evidenceReference;
+
+    @Column(name = "outcome_reason", length = 255)
+    private String outcomeReason;
+
     public void markUnderReview() {
         this.status = DisputeStatus.UNDER_REVIEW;
     }
 
+    public void requestEvidence(LocalDateTime deadline) {
+        this.status = DisputeStatus.EVIDENCE_REQUIRED;
+        this.evidenceDueAt = deadline;
+    }
+
+    public void submitEvidence(String reference, LocalDateTime at) {
+        this.status = DisputeStatus.UNDER_REVIEW;
+        this.evidenceReference = reference;
+        this.evidenceSubmittedAt = at;
+    }
+
+    public void represent() {
+        this.status = DisputeStatus.REPRESENTED;
+    }
+
+    public boolean evidenceWindowClosed(LocalDateTime now) {
+        return evidenceDueAt != null && evidenceSubmittedAt == null
+                && !now.isBefore(evidenceDueAt);
+    }
+
     public void resolve(DisputeStatus outcome, LocalDateTime at) {
-        if (outcome != DisputeStatus.WON && outcome != DisputeStatus.LOST) {
+        if (!outcome.isTerminal()) {
             throw new IllegalArgumentException("Outcome must be WON or LOST");
         }
         this.status = outcome;
         this.resolvedAt = at;
+    }
+
+    public void resolve(DisputeStatus outcome, LocalDateTime at, String reason) {
+        resolve(outcome, at);
+        this.outcomeReason = reason;
     }
 }

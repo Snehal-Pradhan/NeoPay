@@ -12,4 +12,7 @@ public interface DisputeRepository extends JpaRepository<Dispute, UUID> {
     java.util.Optional<Dispute> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") UUID id);
 
     List<Dispute> findByPaymentIdAndMerchantIdOrderByOpenedAtAsc(UUID paymentId, UUID merchantId);
+
+    List<Dispute> findByStatusAndEvidenceDueAtBefore(DisputeStatus status,
+                                                     java.time.LocalDateTime cutoff);
 }

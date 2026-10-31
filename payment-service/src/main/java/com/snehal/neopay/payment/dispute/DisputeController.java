@@ -1,11 +1,7 @@
 package com.snehal.neopay.payment.dispute;
 
 import com.snehal.neopay.common.context.MerchantContext;
-import com.snehal.neopay.common.domain.MerchantId;
-import com.snehal.neopay.common.domain.PaymentId;
 import com.snehal.neopay.common.entity.Money;
-import com.snehal.neopay.common.enums.PaymentStatus;
-import com.snehal.neopay.payment.entity.Payment;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,13 +37,41 @@ public class DisputeController {
                 .toList();
     }
 
+    @PostMapping("/{disputeId}/evidence")
+    public DisputeResponse submitEvidence(@PathVariable UUID paymentId,
+                                          @PathVariable UUID disputeId,
+                                          @Valid @RequestBody EvidenceRequest request) {
+        return DisputeResponse.from(disputeService.submitEvidence(
+                merchantContext.getMerchantId(), disputeId, request));
+    }
+
+    @PostMapping("/{disputeId}/represent")
+    public DisputeResponse represent(@PathVariable UUID paymentId,
+                                     @PathVariable UUID disputeId,
+                                     @Valid @RequestBody RepresentRequest request) {
+        return DisputeResponse.from(disputeService.represent(
+                merchantContext.getMerchantId(), disputeId, request.statement()));
+    }
+
+    @PostMapping("/{disputeId}/resolve")
+    public DisputeResponse resolve(@PathVariable UUID paymentId,
+                                   @PathVariable UUID disputeId,
+                                   @Valid @RequestBody ResolveDisputeRequest request) {
+        return DisputeResponse.from(disputeService.resolve(merchantContext.getMerchantId(),
+                disputeId, request.outcome(), request.reason()));
+    }
+
     public record DisputeResponse(UUID id, UUID paymentId, Money amount, String status,
-                                  String reason, LocalDateTime openedAt,
+                                  String reason, String outcomeReason,
+                                  LocalDateTime openedAt, LocalDateTime evidenceDueAt,
+                                  LocalDateTime evidenceSubmittedAt,
                                   LocalDateTime resolvedAt) {
         static DisputeResponse from(Dispute dispute) {
             return new DisputeResponse(dispute.getId(), dispute.getPaymentId(),
                     dispute.getAmount(), dispute.getStatus().name(), dispute.getReason(),
-                    dispute.getOpenedAt(), dispute.getResolvedAt());
+                    dispute.getOutcomeReason(), dispute.getOpenedAt(),
+                    dispute.getEvidenceDueAt(), dispute.getEvidenceSubmittedAt(),
+                    dispute.getResolvedAt());
         }
     }
 }
