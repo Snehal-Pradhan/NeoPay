@@ -2,7 +2,7 @@
 
 Owns merchant identity, commercial profile, KYC state, risk limits, customers, and merchant webhook configuration. It is the authority other services consult for merchant status and bank details.
 
-![merchant flow](../assets/service_merchant_flow.png)
+<p align="center"><img src="../assets/service_merchant_flow.png" width="60%" alt="merchant flow"></p>
 
 ## Scope
 

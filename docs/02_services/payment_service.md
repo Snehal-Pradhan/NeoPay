@@ -2,7 +2,7 @@
 
 Owns the payment lifecycle from order to capture, the double-entry ledger, refunds, disputes, and inbound processor callbacks.
 
-![payment flow](../assets/service_payment_flow.png)
+<p align="center"><img src="../assets/service_payment_flow.png" width="60%" alt="payment flow"></p>
 
 ## Scope
 

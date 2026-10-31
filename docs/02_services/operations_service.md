@@ -2,7 +2,7 @@
 
 Runs everything that happens after capture: settlement, payouts, reconciliation, and delivery of merchant webhooks.
 
-![operations flow](../assets/service_operations_flow.png)
+<p align="center"><img src="../assets/service_operations_flow.png" width="60%" alt="operations flow"></p>
 
 ## Scope
 

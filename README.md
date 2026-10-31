@@ -30,7 +30,7 @@ Packages use the `com.snehal.neopay` namespace throughout.
 
 ## Architecture
 
-![NeoPay architecture](docs/diagrams/architecture-overview.svg)
+<p align="center"><img src="docs/diagrams/architecture-overview.svg" width="60%" alt="NeoPay architecture"></p>
 
 ```text
                          ┌──────────────────────┐

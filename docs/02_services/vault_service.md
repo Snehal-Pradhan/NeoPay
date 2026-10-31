@@ -2,7 +2,7 @@
 
 Stores card data in encrypted form and issues tokens. It is the only service that handles a PAN.
 
-![vault flow](../assets/service_vault_flow.png)
+<p align="center"><img src="../assets/service_vault_flow.png" width="60%" alt="vault flow"></p>
 
 ## Scope
 

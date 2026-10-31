@@ -2,7 +2,7 @@
 
 Domain events are written in the same database transaction as the state change, then relayed to Kafka by a poller. There is no dual write between Postgres and Kafka.
 
-![Outbox pattern](../assets/03_outbox_pattern.png)
+<p align="center"><img src="../assets/03_outbox_pattern.png" width="60%" alt="Outbox pattern"></p>
 
 Diagram source: `docs/assets/scripts/03_outbox_pattern.py`.
 

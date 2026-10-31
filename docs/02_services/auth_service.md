@@ -2,7 +2,7 @@
 
 Merchants sign up, verify KYC, log in, and create API keys here. The module runs inside `merchant-service`; there is no separate auth deployment.
 
-![auth flow](../assets/service_auth_flow.png)
+<p align="center"><img src="../assets/service_auth_flow.png" width="60%" alt="auth flow"></p>
 
 ## Scope
 

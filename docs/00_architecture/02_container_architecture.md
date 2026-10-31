@@ -2,7 +2,7 @@
 
 Seven Spring Boot services run as separate JVMs. Four own data, three provide edge and platform functions. Services communicate over HTTP with discovery, or asynchronously through Kafka.
 
-![Container architecture](../assets/00_container_architecture.png)
+<p align="center"><img src="../assets/00_container_architecture.png" width="60%" alt="Container architecture"></p>
 
 Diagram source: `docs/assets/scripts/00_container_architecture.py`.
 

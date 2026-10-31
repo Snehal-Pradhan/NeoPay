@@ -2,7 +2,7 @@
 
 Serves per-service, per-profile YAML from the classpath. Services import it at startup with `spring.config.import`.
 
-![config flow](../assets/service_config_flow.png)
+<p align="center"><img src="../assets/service_config_flow.png" width="60%" alt="config flow"></p>
 
 ## Scope
 

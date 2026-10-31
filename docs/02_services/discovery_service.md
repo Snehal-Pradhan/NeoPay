@@ -2,7 +2,7 @@
 
 Eureka registry. Services register on startup and resolve each other by service name.
 
-![discovery flow](../assets/service_discovery_flow.png)
+<p align="center"><img src="../assets/service_discovery_flow.png" width="60%" alt="discovery flow"></p>
 
 ## Scope
 

@@ -151,3 +151,98 @@ exactly once.
 
 **Verify:** payment reaches `CAPTURED` or `FAILED`; no row remains in `AUTHORIZING`
 beyond the window.
+
+---
+
+## 8. Inbound webhook rejected
+
+**Detect:** processor dashboard shows failed deliveries; payment-service logs `WEBHOOK_SIGNATURE_INVALID`, `WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE`, or `WEBHOOK_SECRET_MISSING`.
+
+**Check**
+
+```bash
+grep -E "WEBHOOK_|Duplicate webhook" .run/logs/payment-service.log | tail -20
+```
+
+```sql
+select status, count(*) from webhook_event group by status;
+```
+
+**Act**
+
+1. `WEBHOOK_SECRET_MISSING` means `stripe.sandbox.webhook-secret` is empty. Set `STRIPE_WEBHOOK_SECRET` and restart payment-service.
+2. `WEBHOOK_SIGNATURE_INVALID` with a correct secret means the body was altered in transit, usually by a proxy that re-encodes JSON. Forward the raw body.
+3. `WEBHOOK_TIMESTAMP_OUT_OF_TOLERANCE` with a correct secret means clock skew above 300 s. Fix time sync; do not raise the tolerance to mask it.
+4. A row with status `FAILED` is an accepted event whose handler failed. Inspect `error`, fix the cause, then replay by re-posting the stored payload with a fresh signature.
+
+**Verify:** new deliveries reach `PROCESSED` or `IGNORED`, and no new `FAILED` rows appear.
+
+---
+
+## 9. Dispute evidence sweep is not closing disputes
+
+**Detect:** rows stay in `EVIDENCE_REQUIRED` after `evidence_due_at`, and `DISPUTE_DEADLINE_MISSED` never appears.
+
+**Check**
+
+```sql
+select count(*), min(evidence_due_at)
+from dispute
+where status = 'EVIDENCE_REQUIRED' and evidence_due_at < now();
+```
+
+```bash
+grep "dispute-evidence-sweep" .run/logs/payment-service.log | tail -5
+```
+
+**Act**
+
+1. Confirm the scheduler is enabled and the ShedLock key `payment-service-dispute-evidence-sweep` is not held by a dead instance.
+2. If the lease is stale, wait for `lockAtMostFor` (5 minutes); do not delete it while the holder may be alive.
+3. If the sweep runs but finds nothing, check that `evidence_due_at` is stored in UTC; a local-time value in the future delays closure.
+
+**Verify:** the count of overdue `EVIDENCE_REQUIRED` rows falls to zero and each closed dispute holds exactly one terminal ledger pair.
+
+---
+
+## 10. Pricing override not applied
+
+**Detect:** a settlement fee equals the merchant default although an override row exists.
+
+**Check**
+
+```sql
+select payment_method, fee_bps, fixed_fee_units, max_fee_units, effective_from, effective_to
+from merchant_method_pricing
+where merchant_id = '<id>'
+order by effective_from desc;
+```
+
+**Act**
+
+1. Compare `effective_from` and `effective_to` with the settlement date; both bounds are inclusive.
+2. Confirm the payment method stored on the payment matches the override key; `payment.method` is an ordinal, so a reordered enum changes the match.
+3. Confirm no newer row for the same method shadows the intended one; the resolver takes the newest applicable row.
+
+**Verify:** the recomputed settlement shows the override rate and a cap, if configured, is not exceeded.
+
+---
+
+## 11. Config server unavailable
+
+**Detect:** startup logs show retries against `CONFIG_SERVER_URL`; services start with local defaults or fail when fail-fast is enabled.
+
+**Check**
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8888/actuator/health
+grep "Could not locate PropertySource\|Retrying" .run/logs/*.log | tail -10
+```
+
+**Act**
+
+1. `optional:` import means services start with defaults. Confirm the running values differ from the intended cluster values before accepting that state.
+2. With `SPRING_CLOUD_CONFIG_FAIL_FAST=true`, a service refuses to start; restart the config server first.
+3. After the config server returns, restart affected services; configuration is read at startup, not refreshed.
+
+**Verify:** `/actuator/env` on each service shows the expected source and no retry warnings remain.

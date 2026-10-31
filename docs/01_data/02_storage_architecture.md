@@ -2,7 +2,7 @@
 
 Each service owns one Postgres database. Redis holds only ephemeral control state. Kafka holds events in flight. No object store is used.
 
-![Storage architecture](../assets/01_storage_architecture.png)
+<p align="center"><img src="../assets/01_storage_architecture.png" width="60%" alt="Storage architecture"></p>
 
 Diagram source: `docs/assets/scripts/01_storage_architecture.py`.
 

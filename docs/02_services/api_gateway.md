@@ -2,7 +2,7 @@
 
 The only public entry point. It authenticates merchants, throttles them, applies the idempotency filter, and routes to one of four services.
 
-![api-gateway flow](../assets/service_api_gateway_flow.png)
+<p align="center"><img src="../assets/service_api_gateway_flow.png" width="60%" alt="api-gateway flow"></p>
 
 ## Scope
 

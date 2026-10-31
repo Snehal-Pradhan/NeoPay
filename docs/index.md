@@ -49,6 +49,7 @@ Master index. Each topic has one owner document; this page only routes.
 |---|---|
 | [Observability](04_operations/01_observability.md) | Traces, metrics, logs, gaps |
 | [Deployment and scaling](04_operations/02_deployment_and_hpa.md) | CI, cluster shape, scaling limits |
+| [Configuration reference](REFERENCE_CONFIGURATION.md) | Every config key and its value, generated from YAML |
 
 ## Behaviour and evidence
 
@@ -67,6 +68,8 @@ Master index. Each topic has one owner document; this page only routes.
 | [API contract](API.md) | Versioning, errors, pagination, idempotency |
 | [Design](DESIGN.md) | Invariants and weak points |
 | [Testing](../TESTING.md) | Test layers, coverage and mutation floors |
+| [Contributing](../CONTRIBUTING.md) | Build, test, PR rules, commit format |
+| [Security policy](../SECURITY.md) | Reporting, scope, design controls |
 
 ## Decisions
 
