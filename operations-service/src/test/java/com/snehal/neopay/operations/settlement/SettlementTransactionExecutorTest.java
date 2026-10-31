@@ -2,6 +2,7 @@ package com.snehal.neopay.operations.settlement;
 
 import com.snehal.neopay.common.dto.PaymentSettlementView;
 import com.snehal.neopay.common.dto.SettlementBankDetails;
+import com.snehal.neopay.common.entity.Money;
 import com.snehal.neopay.common.money.FeeSchedule;
 import com.snehal.neopay.common.enums.EventAggregateType;
 import com.snehal.neopay.common.enums.SettlementStatus;
@@ -41,7 +42,7 @@ class SettlementTransactionExecutorTest {
     private SettlementTransactionExecutor executor;
 
     private CarryForwardService carryForwardService;
-    private FeeScheduleResolver feeScheduleResolver;
+    private SettlementFeeCalculator feeCalculator;
 
     private final UUID merchantId = UUID.randomUUID();
 
@@ -53,11 +54,13 @@ class SettlementTransactionExecutorTest {
         outboxEventPublisher = mock(OutboxEventPublisher.class);
         gateway = mock(SettlementIntegrationGateway.class);
         carryForwardService = mock(CarryForwardService.class);
-        feeScheduleResolver = mock(FeeScheduleResolver.class);
-        when(feeScheduleResolver.forMerchant(merchantId)).thenReturn(FeeSchedule.standardIndia());
+        feeCalculator = mock(SettlementFeeCalculator.class);
+        when(feeCalculator.pricingFor(eq(merchantId), any())).thenReturn(MerchantPricing.standard());
+        when(feeCalculator.breakdown(any(), eq("INR"), any())).thenReturn(
+                new FeeBreakdown(Money.inr(200), Money.inr(36), Money.inr(20)));
         executor = new SettlementTransactionExecutor(settlementRepository,
                 settlementPaymentRepository, bankTransferProcessor, outboxEventPublisher,
-                gateway, carryForwardService, feeScheduleResolver);
+                gateway, carryForwardService, feeCalculator);
         when(settlementRepository.save(any(Settlement.class))).thenAnswer(i -> i.getArgument(0));
     }
 
@@ -73,7 +76,7 @@ class SettlementTransactionExecutorTest {
     @Test
     void settlementComputesFeeGstAndNet() {
         when(gateway.findUnsettledCaptured(merchantId))
-                .thenReturn(List.of(new PaymentSettlementView(UUID.randomUUID(), 10_000, 0, "INR", null, 10_000, "INR")));
+                .thenReturn(List.of(new PaymentSettlementView(UUID.randomUUID(), 10_000, 0, "INR", null, 10_000, "INR", "UPI")));
         when(gateway.getSettlementBankDetails(merchantId))
                 .thenReturn(new SettlementBankDetails("acct", "ifsc", "holder"));
         when(bankTransferProcessor.initiate(any(), eq(merchantId), any(), eq("acct"), eq("ifsc")))
@@ -99,7 +102,7 @@ class SettlementTransactionExecutorTest {
     @Test
     void bankFailureMarksSettlementFailed() {
         when(gateway.findUnsettledCaptured(merchantId))
-                .thenReturn(List.of(new PaymentSettlementView(UUID.randomUUID(), 5_000, 0, "INR", null, 5_000, "INR")));
+                .thenReturn(List.of(new PaymentSettlementView(UUID.randomUUID(), 5_000, 0, "INR", null, 5_000, "INR", "UPI")));
         when(gateway.getSettlementBankDetails(merchantId))
                 .thenReturn(new SettlementBankDetails("acct", "ifsc", "holder"));
         when(bankTransferProcessor.initiate(any(), any(), any(), anyString(), anyString()))

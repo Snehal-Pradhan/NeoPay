@@ -7,7 +7,6 @@ import com.snehal.neopay.common.entity.Money;
 import com.snehal.neopay.common.enums.EventAggregateType;
 import com.snehal.neopay.common.enums.SettlementStatus;
 import com.snehal.neopay.common.exception.ResourceNotFoundException;
-import com.snehal.neopay.common.money.FeeSchedule;
 import com.snehal.neopay.operations.entity.Settlement;
 import com.snehal.neopay.operations.entity.SettlementPayment;
 import com.snehal.neopay.operations.entity.SettlementPaymentId;
@@ -39,7 +38,7 @@ public class SettlementTransactionExecutor {
     private final OutboxEventPublisher outboxEventPublisher;
     private final SettlementIntegrationGateway settlementIntegrationGateway;
     private final CarryForwardService carryForwardService;
-    private final FeeScheduleResolver feeScheduleResolver;
+    private final SettlementFeeCalculator feeCalculator;
 
     @Value("${settlement.hold-days:0}")
     private long holdDays;
@@ -57,7 +56,7 @@ public class SettlementTransactionExecutor {
         long debt = carryForwardService.outstanding(merchantId);
         long base = captured - refunded - debt;
 
-        FeeSchedule schedule = feeScheduleResolver.forMerchant(merchantId);
+        MerchantPricing pricing = feeCalculator.pricingFor(merchantId, settlementDate);
 
         if (base <= 0) {
             carryForwardService.setOutstanding(merchantId, Math.negateExact(base), currency);
@@ -67,13 +66,12 @@ public class SettlementTransactionExecutor {
         }
 
         Money grossMoney = Money.of(captured, currency);
-        Money baseMoney = Money.of(base, currency);
-        Money fee = schedule.fee(grossMoney);
-        Money gst = schedule.gst(fee);
-        Money tds = schedule.tds(fee);
-        Money reserve = schedule.reserve(baseMoney);
-        long netUnits = base - fee.getAmountUnits() - gst.getAmountUnits()
-                - tds.getAmountUnits() - reserve.getAmountUnits();
+        FeeBreakdown fees = feeCalculator.breakdown(pricing, currency, eligible);
+        Money fee = fees.fee();
+        Money gst = fees.gst();
+        Money tds = fees.tds();
+        Money reserve = pricing.defaultTerms().reserve(Money.of(base, currency));
+        long netUnits = base - fees.totalUnits() - reserve.getAmountUnits();
 
         if (netUnits <= 0) {
             carryForwardService.setOutstanding(merchantId, debt + Math.negateExact(netUnits), currency);

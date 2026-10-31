@@ -4,11 +4,12 @@ import com.snehal.neopay.common.dto.PaymentSettlementView;
 import com.snehal.neopay.common.dto.SettlementBankDetails;
 import com.snehal.neopay.common.entity.Money;
 import com.snehal.neopay.common.enums.SettlementStatus;
-import com.snehal.neopay.common.money.FeeSchedule;
+import com.snehal.neopay.common.money.PricingTerms;
 import com.snehal.neopay.operations.entity.MerchantFeeSchedule;
 import com.snehal.neopay.operations.entity.Settlement;
 import com.snehal.neopay.operations.outbox.OutboxEventPublisher;
 import com.snehal.neopay.operations.repository.MerchantFeeScheduleRepository;
+import com.snehal.neopay.operations.repository.MerchantMethodPricingRepository;
 import com.snehal.neopay.operations.repository.SettlementPaymentRepository;
 import com.snehal.neopay.operations.repository.SettlementRepository;
 import com.snehal.neopay.operations.settlement.dto.BankTransferResult;
@@ -39,7 +40,7 @@ class SettlementCarryForwardTest {
     private BankTransferProcessor bank;
     private SettlementIntegrationGateway gateway;
     private CarryForwardService carryForward;
-    private FeeScheduleResolver resolver;
+    private SettlementFeeCalculator calculator;
     private SettlementTransactionExecutor executor;
 
     @BeforeEach
@@ -49,11 +50,13 @@ class SettlementCarryForwardTest {
         bank = mock(BankTransferProcessor.class);
         gateway = mock(SettlementIntegrationGateway.class);
         carryForward = mock(CarryForwardService.class);
-        resolver = mock(FeeScheduleResolver.class);
-        when(resolver.forMerchant(merchantId)).thenReturn(FeeSchedule.standardIndia());
+        calculator = mock(SettlementFeeCalculator.class);
+        when(calculator.pricingFor(eq(merchantId), any())).thenReturn(MerchantPricing.standard());
+        when(calculator.breakdown(any(), eq("INR"), any())).thenReturn(
+                new FeeBreakdown(Money.inr(200), Money.inr(36), Money.inr(20)));
         when(settlementRepository.save(any(Settlement.class))).thenAnswer(i -> i.getArgument(0));
         executor = new SettlementTransactionExecutor(settlementRepository, linkRepository, bank,
-                mock(OutboxEventPublisher.class), gateway, carryForward, resolver);
+                mock(OutboxEventPublisher.class), gateway, carryForward, calculator);
         ReflectionTestUtils.setField(executor, "holdDays", 0L);
     }
 
@@ -113,21 +116,27 @@ class SettlementCarryForwardTest {
         MerchantFeeScheduleRepository repository = mock(MerchantFeeScheduleRepository.class);
         when(repository.findById(merchantId)).thenReturn(Optional.of(MerchantFeeSchedule.builder()
                 .merchantId(merchantId).feeBps(100).gstBps(1_800).tdsBps(0).reserveBps(0).build()));
+        MerchantMethodPricingRepository overrides = mock(MerchantMethodPricingRepository.class);
+        when(overrides.findApplicable(eq(merchantId), any())).thenReturn(List.of());
 
-        FeeSchedule schedule = new FeeScheduleResolver(repository).forMerchant(merchantId);
+        MerchantPricing pricing = new SettlementFeeCalculator(repository, overrides)
+                .pricingFor(merchantId, LocalDate.now());
 
-        assertEquals(100, schedule.feeBps());
-        assertEquals(0, schedule.tdsBps());
+        assertEquals(100, pricing.defaultTerms().feeBps());
+        assertEquals(0, pricing.defaultTerms().tdsBps());
     }
 
     @Test
     void defaultScheduleIsUsedWhenMerchantHasNone() {
         MerchantFeeScheduleRepository repository = mock(MerchantFeeScheduleRepository.class);
         when(repository.findById(merchantId)).thenReturn(Optional.empty());
+        MerchantMethodPricingRepository overrides = mock(MerchantMethodPricingRepository.class);
+        when(overrides.findApplicable(eq(merchantId), any())).thenReturn(List.of());
 
-        FeeSchedule schedule = new FeeScheduleResolver(repository).forMerchant(merchantId);
+        MerchantPricing pricing = new SettlementFeeCalculator(repository, overrides)
+                .pricingFor(merchantId, LocalDate.now());
 
-        assertEquals(FeeSchedule.standardIndia(), schedule);
+        assertEquals(PricingTerms.standardIndia(), pricing.defaultTerms());
     }
 
     private void eligible(PaymentSettlementView view) {
@@ -135,6 +144,6 @@ class SettlementCarryForwardTest {
     }
 
     private static PaymentSettlementView view(int amount, LocalDateTime capturedAt) {
-        return new PaymentSettlementView(UUID.randomUUID(), amount, 0, "INR", capturedAt, amount, "INR");
+        return new PaymentSettlementView(UUID.randomUUID(), amount, 0, "INR", capturedAt, amount, "INR", "UPI");
     }
 }

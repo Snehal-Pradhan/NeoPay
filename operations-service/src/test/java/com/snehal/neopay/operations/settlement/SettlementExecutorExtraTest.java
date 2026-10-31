@@ -30,7 +30,7 @@ class SettlementExecutorExtraTest {
         executor = new SettlementTransactionExecutor(repository,
                 mock(SettlementPaymentRepository.class), mock(BankTransferProcessor.class),
                 mock(OutboxEventPublisher.class), mock(SettlementIntegrationGateway.class),
-                mock(CarryForwardService.class), mock(FeeScheduleResolver.class));
+                mock(CarryForwardService.class), mock(SettlementFeeCalculator.class));
     }
 
     @Test

@@ -10,6 +10,7 @@ public record PaymentSettlementView(
         String currency,
         LocalDateTime capturedAt,
         long settlementAmountUnits,
-        String settlementCurrency
+        String settlementCurrency,
+        String paymentMethod
 ) {
 }

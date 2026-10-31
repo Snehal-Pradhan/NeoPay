@@ -56,13 +56,14 @@ public class PaymentLookupServiceImpl implements PaymentLookupService {
 
         if ("INR".equals(currency)) {
             return new PaymentSettlementView(payment.getId(), grossUnits, refundedUnits, currency,
-                    payment.getCapturedAt(), netUnits, currency);
+                    payment.getCapturedAt(), netUnits, currency, payment.getMethod().name());
         }
         FxRateLock lock = fxRateLockService.require(payment.getId());
         var converted = FxConverter.convert(Money.of(netUnits, currency), lock.getRate(),
                 lock.getSpreadBps(), Currency.INR);
         return new PaymentSettlementView(payment.getId(), grossUnits, refundedUnits, currency,
-                payment.getCapturedAt(), converted.getAmountUnits(), converted.getCurrency());
+                payment.getCapturedAt(), converted.getAmountUnits(), converted.getCurrency(),
+                payment.getMethod().name());
     }
 
     @Override
